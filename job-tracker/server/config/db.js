@@ -11,7 +11,9 @@ const pool = new Pool({
 
 const connectDB = async () => {
   try {
+
     await pool.query('SELECT 1');
+
     console.log('PostgreSQL Connected');
   } catch (err) {
     console.log(err);

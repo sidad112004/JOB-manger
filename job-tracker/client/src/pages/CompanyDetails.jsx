@@ -8,7 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../components/ui/dialog';
 import {
   Building2, Plus, ExternalLink, Linkedin, Mail, Phone,
-  ArrowRight, UserCircle2, Clock, ArrowLeft, Trash2, FileText
+  ArrowRight, UserCircle2, Clock, ArrowLeft, Trash2, FileText,
+  Pencil, Globe, Check
 } from 'lucide-react';
 
 const STATUS_STYLES = {
@@ -23,43 +24,56 @@ const STATUS_STYLES = {
 export function CompanyDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [company, setCompany] = useState(null);
-  const [jobs, setJobs] = useState([]);
-  const [people, setPeople] = useState([]);
-  const [companyNotes, setCompanyNotes] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [pageError, setPageError] = useState(null);
 
-  const [statusFilter, setStatusFilter] = useState('All');
+  const [company, setCompany]           = useState(null);
+  const [jobs, setJobs]                 = useState([]);
+  const [people, setPeople]             = useState([]);
+  const [companyNotes, setCompanyNotes] = useState([]);
+  const [loading, setLoading]           = useState(true);
+  const [pageError, setPageError]       = useState(null);
+
+  // ── Edit company ────────────────────────────────────────────
+  const [isEditOpen, setIsEditOpen]   = useState(false);
+  const [editForm, setEditForm]       = useState({ name: '', website: '', notes: '' });
+  const [editError, setEditError]     = useState('');
+  const [editSaving, setEditSaving]   = useState(false);
+
+  // ── Filters ─────────────────────────────────────────────────
+  const [statusFilter, setStatusFilter]     = useState('All');
   const [locationFilter, setLocationFilter] = useState('');
   const [newCompanyNote, setNewCompanyNote] = useState('');
 
+  // ── Job modal ────────────────────────────────────────────────
   const [isJobModalOpen, setIsJobModalOpen] = useState(false);
-  const [jobFormData, setJobFormData] = useState({ role: '', job_link: '', location: '', applied_date: '', status: 'Planning', notes: '' });
+  const [jobFormData, setJobFormData]       = useState({
+    role: '', job_link: '', location: '', applied_date: '', status: 'Planning', notes: ''
+  });
   const [jobError, setJobError] = useState('');
 
+  // ── Person modal ─────────────────────────────────────────────
   const [isPersonModalOpen, setIsPersonModalOpen] = useState(false);
-  const [personFormData, setPersonFormData] = useState({ name: '', role: '', linkedin_url: '', email: '', phone: '' });
+  const [personFormData, setPersonFormData]       = useState({
+    name: '', role: '', linkedin_url: '', email: '', phone: ''
+  });
   const [personError, setPersonError] = useState('');
 
+  // ── Helpers ──────────────────────────────────────────────────
+  const getHeaders = () => ({ Authorization: `Bearer ${localStorage.getItem('token')}` });
+
   const fetchCompanyDetails = async () => {
-    const token = localStorage.getItem('token');
-    const res = await axios.get(`http://localhost:5000/api/companies/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+    const res = await axios.get(`http://localhost:5000/api/companies/${id}`, { headers: getHeaders() });
     setCompany(res.data);
   };
   const fetchJobs = async () => {
-    const token = localStorage.getItem('token');
-    const res = await axios.get(`http://localhost:5000/api/jobs/company/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+    const res = await axios.get(`http://localhost:5000/api/jobs/company/${id}`, { headers: getHeaders() });
     setJobs(res.data);
   };
   const fetchPeople = async () => {
-    const token = localStorage.getItem('token');
-    const res = await axios.get(`http://localhost:5000/api/people/company/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+    const res = await axios.get(`http://localhost:5000/api/people/company/${id}`, { headers: getHeaders() });
     setPeople(res.data);
   };
   const fetchCompanyNotes = async () => {
-    const token = localStorage.getItem('token');
-    const res = await axios.get(`http://localhost:5000/api/company-notes/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+    const res = await axios.get(`http://localhost:5000/api/company-notes/${id}`, { headers: getHeaders() });
     setCompanyNotes(res.data);
   };
 
@@ -68,7 +82,7 @@ export function CompanyDetails() {
       setLoading(true);
       try {
         await Promise.all([fetchCompanyDetails(), fetchJobs(), fetchPeople(), fetchCompanyNotes()]);
-      } catch (err) {
+      } catch {
         setPageError('Failed to load company details.');
       }
       setLoading(false);
@@ -76,35 +90,71 @@ export function CompanyDetails() {
     init();
   }, [id]);
 
+  // Pre-fill edit form whenever company data loads
+  useEffect(() => {
+    if (company) {
+      setEditForm({
+        name:    company.name    || '',
+        website: company.website || '',
+        notes:   company.notes   || '',
+      });
+    }
+  }, [company]);
+
   const filteredJobs = jobs.filter(job => {
     const statusMatch = statusFilter === 'All' || job.status === statusFilter;
-    const locMatch = !locationFilter || (job.location && job.location.toLowerCase().includes(locationFilter.toLowerCase()));
+    const locMatch    = !locationFilter || (job.location && job.location.toLowerCase().includes(locationFilter.toLowerCase()));
     return statusMatch && locMatch;
   });
 
-  // ── Handlers ──────────────────────────────────────────────────────────────
+  // ── Edit company handlers ─────────────────────────────────────
+  const handleEditChange = (e) =>
+    setEditForm({ ...editForm, [e.target.name]: e.target.value });
+
+  const handleEditCompany = async (e) => {
+    e.preventDefault();
+    if (!editForm.name.trim()) { setEditError('Company name is required'); return; }
+    setEditSaving(true);
+    setEditError('');
+    try {
+      await axios.put(
+        `http://localhost:5000/api/companies/${id}`,
+        editForm,
+        { headers: getHeaders() }
+      );
+      await fetchCompanyDetails();
+      setIsEditOpen(false);
+    } catch (err) {
+      setEditError(err.response?.data?.message || 'Failed to update company');
+    }
+    setEditSaving(false);
+  };
+
+  // ── Notes ────────────────────────────────────────────────────
   const handleAddCompanyNote = async (e) => {
     e.preventDefault();
     if (!newCompanyNote.trim()) return;
-    const token = localStorage.getItem('token');
-    await axios.post(`http://localhost:5000/api/company-notes/${id}`, { note: newCompanyNote }, { headers: { Authorization: `Bearer ${token}` } });
+    await axios.post(
+      `http://localhost:5000/api/company-notes/${id}`,
+      { note: newCompanyNote },
+      { headers: getHeaders() }
+    );
     setNewCompanyNote('');
     fetchCompanyNotes();
   };
 
   const handleDeleteCompanyNote = async (noteId) => {
-    const token = localStorage.getItem('token');
-    await axios.delete(`http://localhost:5000/api/company-notes/${noteId}`, { headers: { Authorization: `Bearer ${token}` } });
+    await axios.delete(`http://localhost:5000/api/company-notes/${noteId}`, { headers: getHeaders() });
     fetchCompanyNotes();
   };
 
+  // ── Jobs ─────────────────────────────────────────────────────
   const handleJobChange = (e) => setJobFormData({ ...jobFormData, [e.target.name]: e.target.value });
 
   const handleCreateJob = async (e) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem('token');
-      await axios.post('http://localhost:5000/api/jobs', { ...jobFormData, company_id: id }, { headers: { Authorization: `Bearer ${token}` } });
+      await axios.post('http://localhost:5000/api/jobs', { ...jobFormData, company_id: id }, { headers: getHeaders() });
       setJobFormData({ role: '', job_link: '', location: '', applied_date: '', status: 'Planning', notes: '' });
       setIsJobModalOpen(false);
       fetchJobs();
@@ -115,24 +165,26 @@ export function CompanyDetails() {
 
   const handleDeleteJob = async (jobId) => {
     if (!window.confirm('Delete this job application?')) return;
-    const token = localStorage.getItem('token');
-    await axios.delete(`http://localhost:5000/api/jobs/${jobId}`, { headers: { Authorization: `Bearer ${token}` } });
+    await axios.delete(`http://localhost:5000/api/jobs/${jobId}`, { headers: getHeaders() });
     fetchJobs();
   };
 
   const handleUpdateStatus = async (jobId, newStatus) => {
-    const token = localStorage.getItem('token');
-    await axios.patch(`http://localhost:5000/api/jobs/${jobId}/status`, { status: newStatus }, { headers: { Authorization: `Bearer ${token}` } });
+    await axios.patch(
+      `http://localhost:5000/api/jobs/${jobId}/status`,
+      { status: newStatus },
+      { headers: getHeaders() }
+    );
     fetchJobs();
   };
 
+  // ── People ───────────────────────────────────────────────────
   const handlePersonChange = (e) => setPersonFormData({ ...personFormData, [e.target.name]: e.target.value });
 
   const handleCreatePerson = async (e) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem('token');
-      await axios.post('http://localhost:5000/api/people', { ...personFormData, company_id: id }, { headers: { Authorization: `Bearer ${token}` } });
+      await axios.post('http://localhost:5000/api/people', { ...personFormData, company_id: id }, { headers: getHeaders() });
       setPersonFormData({ name: '', role: '', linkedin_url: '', email: '', phone: '' });
       setIsPersonModalOpen(false);
       fetchPeople();
@@ -143,12 +195,11 @@ export function CompanyDetails() {
 
   const handleDeletePerson = async (personId) => {
     if (!window.confirm('Delete this contact?')) return;
-    const token = localStorage.getItem('token');
-    await axios.delete(`http://localhost:5000/api/people/${personId}`, { headers: { Authorization: `Bearer ${token}` } });
+    await axios.delete(`http://localhost:5000/api/people/${personId}`, { headers: getHeaders() });
     fetchPeople();
   };
 
-  // ── Render states ──────────────────────────────────────────────────────────
+  // ── Render states ─────────────────────────────────────────────
   if (loading) return (
     <div className="flex flex-col items-center justify-center h-full min-h-[60vh] text-gray-400">
       <div className="w-7 h-7 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mb-3" />
@@ -167,7 +218,8 @@ export function CompanyDetails() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Page header */}
+
+      {/* ── Page header ──────────────────────────────────────── */}
       <div className="flex items-center gap-3 mb-8">
         <button
           onClick={() => navigate('/companies')}
@@ -175,16 +227,101 @@ export function CompanyDetails() {
         >
           <ArrowLeft className="h-4 w-4" />
         </button>
-        <div>
-          <h1 className="text-xl font-semibold text-gray-900">{company.name}</h1>
-          {company.website && (
-            <a href={company.website} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-500 hover:underline">
-              {company.website}
-            </a>
-          )}
+
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <h1 className="text-xl font-semibold text-gray-900 truncate">{company.name}</h1>
+            {company.website && (
+              <a
+                href={company.website}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-xs text-blue-500 hover:text-blue-700 hover:underline"
+              >
+                <Globe className="h-3 w-3" />
+                {company.website.replace(/^https?:\/\//, '')}
+              </a>
+            )}
+          </div>
+          <p className="text-xs text-gray-400 mt-0.5">
+            Added {new Date(company.created_at).toLocaleDateString()}
+          </p>
         </div>
+
+        {/* ── Edit company dialog ─────────────────────────── */}
+        <Dialog
+          open={isEditOpen}
+          onOpenChange={(open) => { setIsEditOpen(open); setEditError(''); }}
+        >
+          <DialogTrigger asChild>
+            <Button variant="outline" size="sm" className="gap-1.5 shrink-0">
+              <Pencil className="h-3.5 w-3.5" /> Edit
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Edit Company</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleEditCompany} className="space-y-4 mt-2">
+              {editError && (
+                <p className="text-red-500 text-xs bg-red-50 border border-red-100 rounded-lg px-3 py-2">
+                  {editError}
+                </p>
+              )}
+              <div className="space-y-1.5">
+                <Label htmlFor="edit-name">Company Name *</Label>
+                <Input
+                  id="edit-name"
+                  name="name"
+                  value={editForm.name}
+                  onChange={handleEditChange}
+                  placeholder="e.g. Anthropic"
+                  required
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="edit-website">Website</Label>
+                <Input
+                  id="edit-website"
+                  name="website"
+                  value={editForm.website}
+                  onChange={handleEditChange}
+                  placeholder="https://"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="edit-notes">Notes</Label>
+                <textarea
+                  id="edit-notes"
+                  name="notes"
+                  value={editForm.notes}
+                  onChange={handleEditChange}
+                  rows={3}
+                  className="w-full rounded-md border border-gray-300 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-400 resize-none transition-all"
+                  placeholder="Any general notes about this company…"
+                />
+              </div>
+              <div className="flex gap-2 pt-1">
+                <Button type="submit" className="flex-1 gap-1.5" disabled={editSaving}>
+                  {editSaving ? (
+                    <>
+                      <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      Saving…
+                    </>
+                  ) : (
+                    <><Check className="h-3.5 w-3.5" /> Save Changes</>
+                  )}
+                </Button>
+                <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)}>
+                  Cancel
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
 
+      {/* ── Tabs ─────────────────────────────────────────────── */}
       <Tabs defaultValue="jobs" className="w-full">
         <TabsList className="mb-6">
           <TabsTrigger value="jobs">Jobs ({jobs.length})</TabsTrigger>
@@ -192,7 +329,7 @@ export function CompanyDetails() {
           <TabsTrigger value="notes">Notes ({companyNotes.length})</TabsTrigger>
         </TabsList>
 
-        {/* ── JOBS TAB ── */}
+        {/* ── JOBS ──────────────────────────────────────────── */}
         <TabsContent value="jobs">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
             <div className="flex items-center gap-2 flex-wrap">
@@ -236,7 +373,6 @@ export function CompanyDetails() {
             </Dialog>
           </div>
 
-          {/* Jobs table */}
           <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
             {filteredJobs.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-gray-400">
@@ -277,11 +413,17 @@ export function CompanyDetails() {
                         </td>
                         <td className="px-4 py-3 text-gray-400 text-xs">
                           {job.applied_date ? (
-                            <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{new Date(job.applied_date).toLocaleDateString()}</span>
+                            <span className="flex items-center gap-1">
+                              <Clock className="h-3 w-3" />
+                              {new Date(job.applied_date).toLocaleDateString()}
+                            </span>
                           ) : '—'}
                         </td>
                         <td className="px-4 py-3 text-right">
-                          <button onClick={() => handleDeleteJob(job.id)} className="p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded transition-colors">
+                          <button
+                            onClick={() => handleDeleteJob(job.id)}
+                            className="p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
+                          >
                             <Trash2 className="h-3.5 w-3.5" />
                           </button>
                         </td>
@@ -294,7 +436,7 @@ export function CompanyDetails() {
           </div>
         </TabsContent>
 
-        {/* ── PEOPLE TAB ── */}
+        {/* ── PEOPLE ────────────────────────────────────────── */}
         <TabsContent value="people">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-semibold text-gray-700">Contacts</h2>
@@ -331,7 +473,10 @@ export function CompanyDetails() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {people.map(person => (
-                <div key={person.id} className="bg-white rounded-xl border border-gray-100 hover:border-gray-200 hover:shadow-md transition-all duration-200 flex flex-col">
+                <div
+                  key={person.id}
+                  className="bg-white rounded-xl border border-gray-100 hover:border-gray-200 hover:shadow-md transition-all duration-200 flex flex-col"
+                >
                   <div className="p-4 flex-1">
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-3">
@@ -349,7 +494,12 @@ export function CompanyDetails() {
                         </div>
                       </div>
                       {person.linkedin_url && (
-                        <a href={person.linkedin_url} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-600 p-1 rounded transition-colors">
+                        <a
+                          href={person.linkedin_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-400 hover:text-blue-600 p-1 rounded transition-colors"
+                        >
                           <Linkedin className="h-4 w-4" />
                         </a>
                       )}
@@ -379,7 +529,7 @@ export function CompanyDetails() {
           )}
         </TabsContent>
 
-        {/* ── NOTES TAB ── */}
+        {/* ── NOTES ─────────────────────────────────────────── */}
         <TabsContent value="notes">
           <div className="max-w-2xl space-y-6">
             <form onSubmit={handleAddCompanyNote} className="bg-white rounded-xl border border-gray-100 p-4 space-y-3">
@@ -402,7 +552,9 @@ export function CompanyDetails() {
                 {companyNotes.map(note => (
                   <li key={note.id} className="bg-white rounded-xl border border-gray-100 p-4 group relative">
                     <p className="text-sm text-gray-800 whitespace-pre-wrap pr-8">{note.note}</p>
-                    <span className="text-xs text-gray-400 mt-2 block">{new Date(note.created_at).toLocaleString()}</span>
+                    <span className="text-xs text-gray-400 mt-2 block">
+                      {new Date(note.created_at).toLocaleString()}
+                    </span>
                     <button
                       onClick={() => handleDeleteCompanyNote(note.id)}
                       className="absolute top-3 right-3 p-1 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded opacity-0 group-hover:opacity-100 transition-all"

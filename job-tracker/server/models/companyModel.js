@@ -8,6 +8,17 @@ export const createCompany = async (userId, name, website, notes) => {
   return result.rows[0];
 };
 
+export const updateCompany = async (companyId, userId, { name, website, notes }) => {
+  const result = await pool.query(
+    `UPDATE companies
+     SET name = $1, website = $2, notes = $3
+     WHERE id = $4 AND user_id = $5
+     RETURNING *`,
+    [name, website || null, notes || null, companyId, userId]
+  );
+  return result.rows[0] || null;
+};
+
 export const getUserCompanies = async (userId) => {
   const result = await pool.query(
     'SELECT * FROM companies WHERE user_id = $1 ORDER BY created_at DESC',
