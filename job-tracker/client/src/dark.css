@@ -1,0 +1,654 @@
+/* ─────────────────────────────────────────────────────────────
+   dark.css — Charcoal Theme
+   Import in main.jsx: import './dark.css';
+   Triggered by: document.documentElement.setAttribute('data-dark','true')
+   No Tailwind config changes needed.
+───────────────────────────────────────────────────────────── */
+
+/* ── CSS Variables ────────────────────────────────────────── */
+[data-dark="true"] {
+  --bg-base: #141414;
+  --bg-surface: #1e1e1e;
+  --bg-elevated: #252525;
+  --bg-hover: #2a2a2a;
+  --border: #2e2e2e;
+  --border-light: #262626;
+  --text-primary: #f0f0f0;
+  --text-secondary: #a0a0a0;
+  --text-muted: #555555;
+  --accent: #3b82f6;
+  color-scheme: dark;
+}
+
+/* ── Base ─────────────────────────────────────────────────── */
+[data-dark="true"] body {
+  background-color: var(--bg-base) !important;
+  color: var(--text-primary) !important;
+}
+
+/* ── Page / layout backgrounds ────────────────────────────── */
+[data-dark="true"] .bg-gray-50,
+[data-dark="true"] .bg-gray-100 {
+  background-color: var(--bg-base) !important;
+}
+
+/* ── White surfaces → elevated cards ─────────────────────── */
+[data-dark="true"] .bg-white {
+  background-color: var(--bg-surface) !important;
+}
+
+/* ── Sidebar ──────────────────────────────────────────────── */
+[data-dark="true"] aside {
+  background-color: var(--bg-surface) !important;
+  border-color: var(--border) !important;
+}
+
+[data-dark="true"] aside .border-b,
+[data-dark="true"] aside .border-t {
+  border-color: var(--border) !important;
+}
+
+/* ── Top header ───────────────────────────────────────────── */
+[data-dark="true"] header {
+  background-color: var(--bg-surface) !important;
+  border-color: var(--border) !important;
+}
+
+/* ── All borders ──────────────────────────────────────────── */
+[data-dark="true"] .border-gray-100,
+[data-dark="true"] .border-gray-200,
+[data-dark="true"] .border-gray-50 {
+  border-color: var(--border) !important;
+}
+
+[data-dark="true"] .divide-gray-50>*+* {
+  border-color: var(--border) !important;
+}
+
+[data-dark="true"] .border-b {
+  border-color: var(--border) !important;
+}
+
+[data-dark="true"] .border-t {
+  border-color: var(--border) !important;
+}
+
+[data-dark="true"] .border-r {
+  border-color: var(--border) !important;
+}
+
+/* ── Text ─────────────────────────────────────────────────── */
+[data-dark="true"] .text-gray-900 {
+  color: var(--text-primary) !important;
+}
+
+[data-dark="true"] .text-gray-800 {
+  color: var(--text-primary) !important;
+}
+
+[data-dark="true"] .text-gray-700 {
+  color: #d0d0d0 !important;
+}
+
+[data-dark="true"] .text-gray-600 {
+  color: var(--text-secondary) !important;
+}
+
+[data-dark="true"] .text-gray-500 {
+  color: #787878 !important;
+}
+
+[data-dark="true"] .text-gray-400 {
+  color: #555555 !important;
+}
+
+/* ── Inputs, selects, textareas ───────────────────────────── */
+[data-dark="true"] input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+[data-dark="true"] textarea,
+[data-dark="true"] select {
+  background-color: var(--bg-elevated) !important;
+  border-color: var(--border) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-dark="true"] input::placeholder,
+[data-dark="true"] textarea::placeholder {
+  color: var(--text-muted) !important;
+}
+
+[data-dark="true"] input:focus,
+[data-dark="true"] textarea:focus,
+[data-dark="true"] select:focus {
+  background-color: var(--bg-elevated) !important;
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15) !important;
+}
+
+/* ── Buttons (outline/secondary variant) ─────────────────── */
+[data-dark="true"] button {
+  color: var(--text-primary) !important;
+}
+
+/* Outline buttons — visible border + dark bg */
+[data-dark="true"] [class*="variant-outline"],
+[data-dark="true"] .border.bg-white,
+[data-dark="true"] .border.bg-background {
+  background-color: var(--bg-elevated) !important;
+  border-color: #3a3a3a !important;
+  color: var(--text-primary) !important;
+}
+
+/* Solid primary buttons keep their color */
+[data-dark="true"] button.bg-blue-600,
+[data-dark="true"] button[class*="bg-blue-6"],
+[data-dark="true"] button[class*="bg-primary"] {
+  background-color: #2563eb !important;
+  color: white !important;
+  border-color: #2563eb !important;
+}
+
+/* Follow-up Done button specifically */
+[data-dark="true"] .bg-white.hover\:bg-green-50,
+[data-dark="true"] button[class*="hover:bg-green-50"] {
+  background-color: var(--bg-elevated) !important;
+  border-color: #3a3a3a !important;
+  color: #4ade80 !important;
+}
+
+/* ── Hover states ─────────────────────────────────────────── */
+[data-dark="true"] .hover\:bg-gray-50:hover,
+[data-dark="true"] .hover\:bg-gray-100:hover {
+  background-color: var(--bg-hover) !important;
+}
+
+[data-dark="true"] .hover\:shadow-md:hover {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5) !important;
+}
+
+[data-dark="true"] .hover\:border-gray-200:hover {
+  border-color: #3a3a3a !important;
+}
+
+/* ── Table ────────────────────────────────────────────────── */
+[data-dark="true"] thead {
+  background-color: var(--bg-elevated) !important;
+}
+
+[data-dark="true"] tbody tr:hover {
+  background-color: var(--bg-hover) !important;
+}
+
+[data-dark="true"] .divide-y>*+* {
+  border-color: var(--border-light) !important;
+}
+
+/* ── Dropdowns / search results ───────────────────────────── */
+[data-dark="true"] .shadow-xl {
+  background-color: var(--bg-elevated) !important;
+  border-color: var(--border) !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7) !important;
+}
+
+/* ── Radix Tabs ───────────────────────────────────────────── */
+[data-dark="true"] [role="tablist"] {
+  background-color: var(--bg-elevated) !important;
+  border-color: var(--border) !important;
+}
+
+[data-dark="true"] [role="tab"] {
+  color: var(--text-secondary) !important;
+}
+
+[data-dark="true"] [role="tab"][data-state="active"] {
+  background-color: var(--bg-surface) !important;
+  color: var(--text-primary) !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* ── Radix Dialog / Modal ─────────────────────────────────── */
+[data-dark="true"] [role="dialog"] {
+  background-color: var(--bg-surface) !important;
+  border-color: var(--border) !important;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8) !important;
+}
+
+[data-dark="true"] [data-radix-popper-content-wrapper] {
+  background-color: var(--bg-surface) !important;
+}
+
+/* ── Status badges — colored pills ───────────────────────── */
+[data-dark="true"] .bg-blue-100 {
+  background-color: rgba(59, 130, 246, 0.18) !important;
+}
+
+[data-dark="true"] .bg-blue-50 {
+  background-color: rgba(59, 130, 246, 0.10) !important;
+}
+
+[data-dark="true"] .bg-indigo-100 {
+  background-color: rgba(99, 102, 241, 0.18) !important;
+}
+
+[data-dark="true"] .bg-indigo-50 {
+  background-color: rgba(99, 102, 241, 0.10) !important;
+}
+
+[data-dark="true"] .bg-green-100 {
+  background-color: rgba(34, 197, 94, 0.18) !important;
+}
+
+[data-dark="true"] .bg-green-50 {
+  background-color: rgba(34, 197, 94, 0.10) !important;
+}
+
+[data-dark="true"] .bg-red-100 {
+  background-color: rgba(239, 68, 68, 0.18) !important;
+}
+
+[data-dark="true"] .bg-red-50 {
+  background-color: rgba(239, 68, 68, 0.10) !important;
+}
+
+[data-dark="true"] .bg-orange-100 {
+  background-color: rgba(249, 115, 22, 0.18) !important;
+}
+
+[data-dark="true"] .bg-orange-50 {
+  background-color: rgba(249, 115, 22, 0.10) !important;
+}
+
+[data-dark="true"] .bg-yellow-100 {
+  background-color: rgba(234, 179, 8, 0.18) !important;
+}
+
+[data-dark="true"] .bg-yellow-50 {
+  background-color: rgba(234, 179, 8, 0.10) !important;
+}
+
+[data-dark="true"] .bg-purple-100 {
+  background-color: rgba(168, 85, 247, 0.18) !important;
+}
+
+[data-dark="true"] .bg-purple-50 {
+  background-color: rgba(168, 85, 247, 0.10) !important;
+}
+
+[data-dark="true"] .bg-amber-100 {
+  background-color: rgba(245, 158, 11, 0.18) !important;
+}
+
+[data-dark="true"] .bg-amber-50 {
+  background-color: rgba(245, 158, 11, 0.10) !important;
+}
+
+[data-dark="true"] .bg-gray-100 {
+  background-color: var(--bg-elevated) !important;
+}
+
+[data-dark="true"] .bg-gray-50 {
+  background-color: var(--bg-base) !important;
+}
+
+/* ── Status text colors stay vivid in dark ────────────────── */
+[data-dark="true"] .text-blue-700 {
+  color: #60a5fa !important;
+}
+
+[data-dark="true"] .text-blue-600 {
+  color: #60a5fa !important;
+}
+
+[data-dark="true"] .text-blue-500 {
+  color: #60a5fa !important;
+}
+
+[data-dark="true"] .text-indigo-700 {
+  color: #818cf8 !important;
+}
+
+[data-dark="true"] .text-green-700 {
+  color: #4ade80 !important;
+}
+
+[data-dark="true"] .text-green-600 {
+  color: #4ade80 !important;
+}
+
+[data-dark="true"] .text-red-700 {
+  color: #f87171 !important;
+}
+
+[data-dark="true"] .text-red-600 {
+  color: #f87171 !important;
+}
+
+[data-dark="true"] .text-red-500 {
+  color: #f87171 !important;
+}
+
+[data-dark="true"] .text-orange-800 {
+  color: #fb923c !important;
+}
+
+[data-dark="true"] .text-orange-700 {
+  color: #fb923c !important;
+}
+
+[data-dark="true"] .text-orange-600 {
+  color: #fb923c !important;
+}
+
+[data-dark="true"] .text-yellow-700 {
+  color: #facc15 !important;
+}
+
+[data-dark="true"] .text-purple-700 {
+  color: #c084fc !important;
+}
+
+[data-dark="true"] .text-gray-700 {
+  color: #d0d0d0 !important;
+}
+
+/* ── Dashboard gradient stat cards ───────────────────────── */
+[data-dark="true"] .bg-gradient-to-br {
+  background: var(--bg-surface) !important;
+}
+
+/* ── Active nav item — white glow instead of blue ─────────── */
+[data-dark="true"] .bg-blue-600 {
+  background-color: rgba(255, 255, 255, 0.10) !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08) !important;
+}
+
+[data-dark="true"] .bg-blue-50.text-blue-700,
+[data-dark="true"] .bg-blue-50 {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+/* Keep the logo icon bg blue */
+[data-dark="true"] .bg-blue-600.flex.items-center.justify-center {
+  background-color: #2563eb !important;
+  box-shadow: none !important;
+}
+
+/* Active nav text should be white not blue */
+[data-dark="true"] nav .bg-blue-600,
+[data-dark="true"] nav [class*="bg-blue-600"] {
+  background-color: rgba(255, 255, 255, 0.10) !important;
+  box-shadow: none !important;
+}
+
+[data-dark="true"] nav .bg-blue-600 span,
+[data-dark="true"] nav .bg-blue-600 svg {
+  color: #ffffff !important;
+}
+
+/* ── Chat / notes area ────────────────────────────────────── */
+[data-dark="true"] .bg-slate-50 {
+  background-color: var(--bg-base) !important;
+}
+
+/* ── Person card gradient header ─────────────────────────── */
+[data-dark="true"] .from-blue-50,
+[data-dark="true"] .to-indigo-50 {
+  background: var(--bg-elevated) !important;
+}
+
+/* ── Empty state dashed border ───────────────────────────── */
+[data-dark="true"] .border-dashed {
+  border-color: #3a3a3a !important;
+  background-color: #191919 !important;
+}
+
+[data-dark="true"] .border-2.border-dashed {
+  border-color: #3a3a3a !important;
+  background-color: #191919 !important;
+}
+
+/* ── Follow-up status rows ────────────────────────────────── */
+[data-dark="true"] .bg-green-50.border-green-100 {
+  background-color: rgba(34, 197, 94, 0.08) !important;
+  border-color: rgba(34, 197, 94, 0.2) !important;
+}
+
+[data-dark="true"] .bg-red-50.border-red-100 {
+  background-color: rgba(239, 68, 68, 0.08) !important;
+  border-color: rgba(239, 68, 68, 0.2) !important;
+}
+
+[data-dark="true"] .bg-orange-50.border-orange-100 {
+  background-color: rgba(249, 115, 22, 0.08) !important;
+  border-color: rgba(249, 115, 22, 0.2) !important;
+}
+
+/* ── Error / success alert boxes ─────────────────────────── */
+[data-dark="true"] .bg-red-50.border.border-red-100 {
+  background-color: rgba(239, 68, 68, 0.1) !important;
+  border-color: rgba(239, 68, 68, 0.3) !important;
+}
+
+[data-dark="true"] .bg-green-50.border.border-green-100 {
+  background-color: rgba(34, 197, 94, 0.1) !important;
+  border-color: rgba(34, 197, 94, 0.3) !important;
+}
+
+/* ── Calendar (react-big-calendar) ───────────────────────── */
+
+/* Outer shell */
+[data-dark="true"] .rbc-calendar {
+  background-color: var(--bg-surface) !important;
+  color: var(--text-primary) !important;
+  border: none !important;
+}
+
+/* Day header row (Sun Mon Tue...) */
+[data-dark="true"] .rbc-header {
+  background-color: var(--bg-elevated) !important;
+  color: var(--text-secondary) !important;
+  border-color: rgba(255, 255, 255, 0.05) !important;
+  padding: 10px 4px !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.05em !important;
+  text-transform: uppercase !important;
+}
+
+[data-dark="true"] .rbc-header+.rbc-header {
+  border-left-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* All grid cells */
+[data-dark="true"] .rbc-day-bg {
+  border-color: rgba(255, 255, 255, 0.04) !important;
+}
+
+[data-dark="true"] .rbc-month-row {
+  border-color: rgba(255, 255, 255, 0.04) !important;
+}
+
+[data-dark="true"] .rbc-month-view {
+  border-color: rgba(255, 255, 255, 0.04) !important;
+}
+
+/* Off-range days (greyed out) */
+[data-dark="true"] .rbc-off-range-bg {
+  background-color: rgba(0, 0, 0, 0.18) !important;
+}
+
+[data-dark="true"] .rbc-off-range .rbc-date-cell a,
+[data-dark="true"] .rbc-off-range .rbc-date-cell {
+  color: #3a3a3a !important;
+}
+
+/* Today cell — subtle blue glow */
+[data-dark="true"] .rbc-today {
+  background-color: rgba(59, 130, 246, 0.1) !important;
+  position: relative !important;
+}
+
+/* Date numbers */
+[data-dark="true"] .rbc-date-cell {
+  color: #888 !important;
+  padding: 6px 8px !important;
+  font-size: 12px !important;
+}
+
+[data-dark="true"] .rbc-date-cell.rbc-now a,
+[data-dark="true"] .rbc-now .rbc-date-cell a {
+  color: #60a5fa !important;
+  font-weight: 700 !important;
+}
+
+/* Toolbar (Today / Back / Next / Month / Week ...) */
+[data-dark="true"] .rbc-toolbar {
+  background-color: var(--bg-elevated) !important;
+  padding: 12px 16px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+  margin-bottom: 0 !important;
+}
+
+[data-dark="true"] .rbc-toolbar-label {
+  color: var(--text-primary) !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+}
+
+[data-dark="true"] .rbc-toolbar button {
+  color: #aaa !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 6px !important;
+  padding: 5px 12px !important;
+  font-size: 12px !important;
+  transition: all 0.15s !important;
+}
+
+[data-dark="true"] .rbc-toolbar button:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #fff !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+[data-dark="true"] .rbc-toolbar button.rbc-active,
+[data-dark="true"] .rbc-toolbar button:active {
+  background: #2563eb !important;
+  color: white !important;
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.3) !important;
+}
+
+/* Time gutter in week/day view */
+[data-dark="true"] .rbc-time-gutter,
+[data-dark="true"] .rbc-time-header-gutter {
+  background-color: var(--bg-elevated) !important;
+  color: #666 !important;
+  border-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+[data-dark="true"] .rbc-time-content {
+  border-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+[data-dark="true"] .rbc-time-slot {
+  border-color: rgba(255, 255, 255, 0.03) !important;
+}
+
+[data-dark="true"] .rbc-current-time-indicator {
+  background-color: #3b82f6 !important;
+}
+
+/* "show more" link */
+[data-dark="true"] .rbc-show-more {
+  color: #60a5fa !important;
+  background: transparent !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+}
+
+/* Agenda view */
+[data-dark="true"] .rbc-agenda-view table {
+  border-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+[data-dark="true"] .rbc-agenda-date-cell,
+[data-dark="true"] .rbc-agenda-time-cell {
+  color: #888 !important;
+  background: var(--bg-elevated) !important;
+  border-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+[data-dark="true"] .rbc-agenda-event-cell {
+  border-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* ── Heatmap ──────────────────────────────────────────────── */
+[data-dark="true"] .react-calendar-heatmap rect.color-empty {
+  fill: #1e1e1e !important;
+}
+
+[data-dark="true"] .react-calendar-heatmap rect.color-scale-1 {
+  fill: #14532d !important;
+}
+
+[data-dark="true"] .react-calendar-heatmap rect.color-scale-2 {
+  fill: #166534 !important;
+}
+
+[data-dark="true"] .react-calendar-heatmap rect.color-scale-3 {
+  fill: #16a34a !important;
+}
+
+[data-dark="true"] .react-calendar-heatmap rect.color-scale-4 {
+  fill: #22c55e !important;
+}
+
+[data-dark="true"] .react-calendar-heatmap text {
+  fill: #787878 !important;
+}
+
+/* ── Selected chip (company picker) ──────────────────────── */
+[data-dark="true"] .bg-blue-light,
+[data-dark="true"] [class*="bg-blue-50"] {
+  background-color: rgba(59, 130, 246, 0.12) !important;
+}
+
+/* ── Scrollbar ────────────────────────────────────────────── */
+[data-dark="true"] ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+[data-dark="true"] ::-webkit-scrollbar-track {
+  background: var(--bg-base);
+}
+
+[data-dark="true"] ::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 4px;
+}
+
+[data-dark="true"] ::-webkit-scrollbar-thumb:hover {
+  background: #444;
+}
+
+/* ── Heatmap light mode green scale (global) ──────────────── */
+.react-calendar-heatmap rect.color-scale-1 {
+  fill: #dcfce7;
+}
+
+.react-calendar-heatmap rect.color-scale-2 {
+  fill: #86efac;
+}
+
+.react-calendar-heatmap rect.color-scale-3 {
+  fill: #22c55e;
+}
+
+.react-calendar-heatmap rect.color-scale-4 {
+  fill: #15803d;
+}
+
+.react-calendar-heatmap rect.color-empty {
+  fill: #f1f5f9;
+}

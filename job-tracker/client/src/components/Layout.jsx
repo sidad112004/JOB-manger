@@ -1,12 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Briefcase, Calendar, LogOut, Menu, Search, X, Settings, User } from 'lucide-react';
+import { LayoutDashboard, Briefcase, Calendar, LogOut, Menu, Search, X, Settings, Sun, Moon } from 'lucide-react';
 import { Input } from './ui/input';
+import { useTheme } from '../context/ThemeContext';
 import axios from 'axios';
 const API_URL = import.meta.env.VITE_API_URL;
 
 export function Layout({ children }) {
   const navigate = useNavigate();
+  const { isDark, toggleTheme } = useTheme();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState(null);
@@ -83,7 +85,7 @@ export function Layout({ children }) {
             <div className="h-7 w-7 rounded-lg bg-blue-600 flex items-center justify-center">
               <Briefcase className="h-4 w-4 text-white" />
             </div>
-            JobTracker
+            ReachlistTracker
           </div>
           <button className="lg:hidden ml-auto text-gray-400 hover:text-gray-600" onClick={() => setIsMobileMenuOpen(false)}>
             <X className="h-4 w-4" />
@@ -118,7 +120,7 @@ export function Layout({ children }) {
           <button onClick={() => setIsMobileMenuOpen(true)} className="lg:hidden p-1.5 text-gray-500 hover:bg-gray-100 rounded-md">
             <Menu className="h-5 w-5" />
           </button>
-          <span className="lg:hidden font-bold text-blue-600 text-sm">JobTracker</span>
+          <span className="lg:hidden font-bold text-blue-600 text-sm">ReachlistTracker</span>
 
           <div className="flex items-center gap-3 ml-auto">
             {/* Search */}
@@ -197,14 +199,32 @@ export function Layout({ children }) {
                     <p className="text-xs text-gray-400 truncate mt-0.5">{user.email || ''}</p>
                   </div>
 
-                  {/* Menu items */}
                   <div className="py-1">
+                    {/* Settings */}
                     <button
                       onClick={() => { setIsAvatarOpen(false); navigate('/settings'); }}
                       className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                     >
                       <Settings className="h-4 w-4 text-gray-400" />
                       Settings
+                    </button>
+
+                    {/* ── Dark mode toggle ── */}
+                    <button
+                      onClick={toggleTheme}
+                      className="flex items-center justify-between w-full px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        {isDark
+                          ? <Sun className="h-4 w-4 text-amber-400" />
+                          : <Moon className="h-4 w-4 text-gray-400" />
+                        }
+                        <span>{isDark ? 'Light Mode' : 'Dark Mode'}</span>
+                      </div>
+                      {/* Toggle pill */}
+                      <div className={`relative w-9 h-5 rounded-full transition-colors duration-200 ${isDark ? 'bg-blue-600' : 'bg-gray-200'}`}>
+                        <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-transform duration-200 ${isDark ? 'translate-x-4' : 'translate-x-0'}`} />
+                      </div>
                     </button>
                   </div>
 

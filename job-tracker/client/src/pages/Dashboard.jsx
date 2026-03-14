@@ -149,7 +149,13 @@ export function Dashboard() {
                         <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${isToday ? 'bg-red-100 text-red-600' : 'bg-yellow-50 text-yellow-700'}`}>
                           {isToday ? 'Today' : fDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                         </span>
-                        <Button variant="outline" size="sm" onClick={() => handleCompleteFollowup(f.id)} className="h-7 text-xs px-2">
+                        {/* ── Done button — explicit colors so dark mode works ── */}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleCompleteFollowup(f.id)}
+                          className="h-7 text-xs px-3 border-gray-300 text-gray-700 bg-white hover:bg-green-50 hover:text-green-700 hover:border-green-300 transition-colors"
+                        >
                           Done
                         </Button>
                       </div>
@@ -172,9 +178,13 @@ export function Dashboard() {
               startDate={shiftDate(today, -135)}
               endDate={today}
               values={activity}
+              // ── Fixed: explicit scale classes, green in both light & dark ──
               classForValue={(value) => {
-                if (!value) return 'color-empty';
-                return `color-scale-${Math.min(value.count, 4)}`;
+                if (!value || !value.count) return 'color-empty';
+                if (value.count >= 4) return 'color-scale-4';
+                if (value.count === 3) return 'color-scale-3';
+                if (value.count === 2) return 'color-scale-2';
+                return 'color-scale-1';
               }}
             />
           </div>

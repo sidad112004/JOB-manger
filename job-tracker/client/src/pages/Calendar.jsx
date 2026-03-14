@@ -16,8 +16,6 @@ const localizer = dateFnsLocalizer({ format, parse, startOfWeek, getDay, locales
 export function Calendar() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  // ── Controlled date & view — this is what was missing ────────
   const [currentDate, setCurrentDate] = useState(new Date());
   const [currentView, setCurrentView] = useState('month');
 
@@ -59,7 +57,6 @@ export function Calendar() {
     let border = '#d97706';
     if (event.resource.completed) { bg = '#10b981'; border = '#059669'; }
     else if (event.resource.isOverdue) { bg = '#ef4444'; border = '#dc2626'; }
-
     return {
       style: {
         backgroundColor: bg,
@@ -70,6 +67,7 @@ export function Calendar() {
         fontSize: '12px',
         fontWeight: '500',
         padding: '2px 6px',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
       }
     };
   };
@@ -112,10 +110,15 @@ export function Calendar() {
         </div>
       </div>
 
-      {/* Calendar */}
+      {/* Calendar container — no harsh border, subtle shadow */}
       <div
-        className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden p-4"
-        style={{ height: '75vh' }}
+        className="rounded-2xl overflow-hidden"
+        style={{
+          height: '75vh',
+          background: 'transparent',
+          border: '1px solid rgba(255,255,255,0.06)',
+          boxShadow: '0 0 0 1px rgba(0,0,0,0.12), 0 8px 32px rgba(0,0,0,0.18)',
+        }}
       >
         {loading ? (
           <div className="flex flex-col items-center justify-center h-full text-gray-400">
@@ -131,8 +134,6 @@ export function Calendar() {
             style={{ height: '100%' }}
             eventPropGetter={eventStyleGetter}
             components={{ event: CustomEvent }}
-
-            // ── These three props fix the Back/Next/Today buttons ──
             date={currentDate}
             view={currentView}
             onNavigate={(newDate) => setCurrentDate(newDate)}
