@@ -1,5 +1,6 @@
 import * as Followup from '../models/followupModel.js';
 import * as Person from '../models/personModel.js';
+import { logActivity } from '../models/activityModel.js';
 
 export const createFollowup = async (req, res) => {
   try {
@@ -17,6 +18,10 @@ export const createFollowup = async (req, res) => {
     }
 
     const followup = await Followup.createFollowup(person_id, followup_date);
+    
+    // Log activity
+    await logActivity(userId, `Scheduled follow-up with ${person.name}`, 'followup', followup.id);
+
     res.status(201).json(followup);
   } catch (error) {
     console.error(error);

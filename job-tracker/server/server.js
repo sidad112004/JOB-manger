@@ -10,6 +10,9 @@ import personRoutes from './routes/personRoutes.js';
 import personNotesRoutes from './routes/personNotesRoutes.js';
 import followupRoutes from './routes/followupRoutes.js';
 import dashboardRoutes from './routes/dashboardRoutes.js';
+import searchRoutes from './routes/searchRoutes.js';
+import companyNotesRoutes from './routes/companyNotesRoutes.js';
+import activityRoutes from './routes/activityRoutes.js';
 
 dotenv.config();
 
@@ -68,6 +71,9 @@ app.use('/api/people', personRoutes);
 app.use('/api/person-notes', personNotesRoutes);
 app.use('/api/followups', followupRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/search', searchRoutes);
+app.use('/api/company-notes', companyNotesRoutes);
+app.use('/api/activities', activityRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

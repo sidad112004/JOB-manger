@@ -100,11 +100,18 @@ export function PersonDetails() {
     }
   };
 
-  if (loading) return <div className="p-8 text-center text-gray-500">Loading...</div>;
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center p-24 text-gray-500">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600 mb-4"></div>
+        <p className="text-lg font-medium animate-pulse">Loading Person...</p>
+      </div>
+    );
+  }
   if (!person) return <div className="p-8 text-center text-red-500">Person not found or access denied.</div>;
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="flex flex-col w-full">
       <header className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row md:justify-between md:items-center gap-4">
           <div>

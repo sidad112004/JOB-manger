@@ -1,15 +1,10 @@
 import { pool } from './config/db.js';
-import dotenv from 'dotenv';
-dotenv.config();
 
-const createTables = async () => {
+const createFinalTables = async () => {
   try {
-    console.log('Connecting to database...');
-    
-    // Create company_notes table
     await pool.query(`
       CREATE TABLE IF NOT EXISTS company_notes (
-        id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         company_id UUID REFERENCES companies(id) ON DELETE CASCADE,
         note TEXT NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -17,10 +12,9 @@ const createTables = async () => {
     `);
     console.log('company_notes table created successfully');
 
-    // Create activities table
     await pool.query(`
       CREATE TABLE IF NOT EXISTS activities (
-        id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         user_id UUID REFERENCES users(id) ON DELETE CASCADE,
         action TEXT NOT NULL,
         entity_type TEXT NOT NULL,
@@ -30,11 +24,11 @@ const createTables = async () => {
     `);
     console.log('activities table created successfully');
 
+    process.exit(0);
   } catch (err) {
-    console.error('Error creating polish tables:', err);
-  } finally {
-    pool.end();
+    console.error('Error creating final tables', err);
+    process.exit(1);
   }
 };
 
-createTables();
+createFinalTables();

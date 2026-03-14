@@ -1,5 +1,6 @@
 import * as Job from '../models/jobModel.js';
 import * as Company from '../models/companyModel.js';
+import { logActivity } from '../models/activityModel.js';
 
 export const createJob = async (req, res) => {
   try {
@@ -17,6 +18,10 @@ export const createJob = async (req, res) => {
     }
 
     const job = await Job.createJob(company_id, userId, role, job_link, location, applied_date, status, notes);
+    
+    // Log activity
+    await logActivity(userId, `Applied to ${role} at ${company.name}`, 'job', job.id);
+
     res.status(201).json(job);
   } catch (error) {
     console.error(error);
@@ -51,6 +56,14 @@ export const updateJobStatus = async (req, res) => {
     
     if (!updatedJob) {
       return res.status(404).json({ message: 'Job not found or unauthorized' });
+    }
+
+    try {
+      const company = await Company.getCompanyById(updatedJob.company_id, userId);
+      const companyName = company ? company.name : 'Unknown';
+      await logActivity(userId, `Updated job status to ${status} for ${updatedJob.role} at ${companyName}`, 'job', updatedJob.id);
+    } catch (e) {
+      await logActivity(userId, `Updated job status to ${status} for ${updatedJob.role}`, 'job', updatedJob.id);
     }
 
     res.json(updatedJob);

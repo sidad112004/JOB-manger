@@ -14,7 +14,14 @@ export function CompanyDetails() {
   const [company, setCompany] = useState(null);
   const [jobs, setJobs] = useState([]);
   const [people, setPeople] = useState([]);
+  const [companyNotes, setCompanyNotes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [pageError, setPageError] = useState(null);
+
+  // Filters
+  const [statusFilter, setStatusFilter] = useState('All');
+  const [locationFilter, setLocationFilter] = useState('');
+  const [newCompanyNote, setNewCompanyNote] = useState('');
 
   const [isJobModalOpen, setIsJobModalOpen] = useState(false);
   const [jobFormData, setJobFormData] = useState({
@@ -64,14 +71,63 @@ export function CompanyDetails() {
     }
   };
 
+  const fetchCompanyNotes = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get(`http://localhost:5000/api/company-notes/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setCompanyNotes(res.data);
+    } catch (err) {
+      console.error('Failed to fetch company notes', err);
+    }
+  };
+
   useEffect(() => {
     const initData = async () => {
       setLoading(true);
-      await Promise.all([fetchCompanyDetails(), fetchJobs(), fetchPeople()]);
+      try {
+        await Promise.all([fetchCompanyDetails(), fetchJobs(), fetchPeople(), fetchCompanyNotes()]);
+      } catch (err) {
+        setPageError('An error occurred while loading company details.');
+      }
       setLoading(false);
     };
     initData();
   }, [id]);
+
+  const filteredJobs = jobs.filter(job => {
+    const statusMatch = statusFilter === 'All' || job.status === statusFilter;
+    const locMatch = !locationFilter || (job.location && job.location.toLowerCase().includes(locationFilter.toLowerCase()));
+    return statusMatch && locMatch;
+  });
+
+  const handleAddCompanyNote = async (e) => {
+    e.preventDefault();
+    if (!newCompanyNote.trim()) return;
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(`http://localhost:5000/api/company-notes/${id}`, { note: newCompanyNote }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setNewCompanyNote('');
+      fetchCompanyNotes();
+    } catch (err) {
+      console.error('Failed to add note', err);
+    }
+  };
+
+  const handleDeleteCompanyNote = async (noteId) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`http://localhost:5000/api/company-notes/${noteId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchCompanyNotes();
+    } catch (err) {
+      console.error('Failed to delete note', err);
+    }
+  };
 
   const handleJobChange = (e) => {
     setJobFormData({ ...jobFormData, [e.target.name]: e.target.value });
@@ -150,11 +206,28 @@ export function CompanyDetails() {
   };
 
 
-  if (loading) return <div className="p-8 text-center text-gray-500">Loading...</div>;
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center p-24 text-gray-500">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600 mb-4"></div>
+        <p className="text-lg font-medium animate-pulse">Loading Company Details...</p>
+      </div>
+    );
+  }
+
+  if (pageError) {
+    return (
+      <div className="flex flex-col items-center justify-center p-24 text-red-500">
+        <p className="text-lg font-medium">{pageError}</p>
+        <Button onClick={() => window.location.reload()} variant="outline" className="mt-4">Try Again</Button>
+      </div>
+    );
+  }
+
   if (!company) return <div className="p-8 text-center text-red-500">Company not found or access denied.</div>;
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="flex flex-col w-full">
       <header className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row md:justify-between md:items-center gap-4">
           <div>
@@ -171,15 +244,38 @@ export function CompanyDetails() {
 
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
         <Tabs defaultValue="jobs" className="w-full">
-          <TabsList className="grid w-full max-w-md grid-cols-2">
+          <TabsList className="grid w-full max-w-lg grid-cols-3">
             <TabsTrigger value="jobs">Jobs</TabsTrigger>
             <TabsTrigger value="people">People</TabsTrigger>
+            <TabsTrigger value="notes">Notes</TabsTrigger>
           </TabsList>
           
           <TabsContent value="jobs" className="mt-6">
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
               <h2 className="text-xl font-semibold text-gray-800">Job Applications</h2>
-              <Dialog open={isJobModalOpen} onOpenChange={setIsJobModalOpen}>
+              
+              <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                <Input 
+                  placeholder="Filter by location (e.g. Remote)" 
+                  value={locationFilter} 
+                  onChange={(e) => setLocationFilter(e.target.value)} 
+                  className="w-full sm:w-48 bg-white"
+                />
+                <select 
+                  className="w-full sm:w-40 flex h-10 items-center justify-between rounded-md border border-input bg-white px-3 py-2 text-sm"
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                >
+                  <option value="All">All Statuses</option>
+                  <option value="Planning">Planning</option>
+                  <option value="Applied">Applied</option>
+                  <option value="Online Assessment">Online Assessment</option>
+                  <option value="Interview">Interview</option>
+                  <option value="Offer">Offer</option>
+                  <option value="Rejected">Rejected</option>
+                </select>
+
+                <Dialog open={isJobModalOpen} onOpenChange={setIsJobModalOpen}>
                 <DialogTrigger asChild>
                   <Button>Add Job</Button>
                 </DialogTrigger>
@@ -227,6 +323,7 @@ export function CompanyDetails() {
                 </DialogContent>
               </Dialog>
             </div>
+            </div>
 
             <div className="bg-white rounded-lg border shadow-sm overflow-hidden">
               <Table>
@@ -240,14 +337,14 @@ export function CompanyDetails() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {jobs.length === 0 ? (
+                  {filteredJobs.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={5} className="text-center py-6 text-gray-500">
-                        No job applications found. Add one to get started!
+                        No job applications found matching your criteria.
                       </TableCell>
                     </TableRow>
                   ) : (
-                    jobs.map((job) => (
+                    filteredJobs.map((job) => (
                       <TableRow key={job.id}>
                         <TableCell className="font-medium">
                           {job.job_link ? (
@@ -374,6 +471,51 @@ export function CompanyDetails() {
                   )}
                 </TableBody>
               </Table>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="notes" className="mt-6">
+            <div className="bg-white rounded-lg border shadow-sm p-6 max-w-3xl">
+              <h2 className="text-xl font-semibold text-gray-800 mb-6">Company Notes</h2>
+              
+              <form onSubmit={handleAddCompanyNote} className="mb-8 space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="companyNote">Add a note about this company</Label>
+                  <textarea 
+                    id="companyNote"
+                    value={newCompanyNote}
+                    onChange={(e) => setNewCompanyNote(e.target.value)}
+                    className="w-full flex min-h-[100px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    placeholder="e.g. Referral hiring usually opens in August. They use a 4-round interview process..."
+                    required
+                  />
+                </div>
+                <Button type="submit">Save General Note</Button>
+              </form>
+
+              <div className="space-y-4">
+                {companyNotes.length === 0 ? (
+                  <p className="text-center text-gray-500 py-8 border-t">No company notes yet. Add one above.</p>
+                ) : (
+                  <ul className="space-y-4">
+                    {companyNotes.map(note => (
+                      <li key={note.id} className="text-sm border-l-4 border-blue-500 bg-gray-50 p-4 rounded-r-lg relative group/note shadow-sm">
+                        <p className="whitespace-pre-wrap pr-8 text-gray-800 text-base">{note.note}</p>
+                        <button 
+                          onClick={() => handleDeleteCompanyNote(note.id)}
+                          className="absolute top-2 right-2 p-1 text-gray-400 hover:text-red-600 opacity-0 group-hover/note:opacity-100 transition-opacity bg-white hover:bg-red-50 rounded"
+                          title="Delete Note"
+                        >
+                          ✕
+                        </button>
+                        <span className="text-xs text-gray-400 block mt-3 font-medium">
+                          {new Date(note.created_at).toLocaleString()}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
             </div>
           </TabsContent>
         </Tabs>

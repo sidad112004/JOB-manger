@@ -9,6 +9,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 
 export function Companies() {
   const [companies, setCompanies] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [pageError, setPageError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({ name: '', website: '', notes: '' });
   const [error, setError] = useState('');
@@ -21,8 +23,11 @@ export function Companies() {
         headers: { Authorization: `Bearer ${token}` }
       });
       setCompanies(res.data);
+      setLoading(false);
     } catch (err) {
       console.error('Failed to fetch companies', err);
+      setPageError('Failed to load companies. Please try again later.');
+      setLoading(false);
     }
   };
 
@@ -63,42 +68,45 @@ export function Companies() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">Companies</h1>
-          <div className="flex gap-4">
-            <Button variant="outline" onClick={() => navigate('/dashboard')}>Back to Dashboard</Button>
-            
-            <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-              <DialogTrigger asChild>
-                <Button>Add Company</Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                  <DialogTitle>Create New Company</DialogTitle>
-                </DialogHeader>
-                <form onSubmit={handleCreateCompany} className="space-y-4 mt-4">
-                  {error && <p className="text-red-500 text-sm">{error}</p>}
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Company Name*</Label>
-                    <Input id="name" name="name" value={formData.name} onChange={handleChange} required />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="website">Website</Label>
-                    <Input id="website" name="website" placeholder="https://" value={formData.website} onChange={handleChange} />
-                  </div>
-                  <Button type="submit" className="w-full">Save Company</Button>
-                </form>
-              </DialogContent>
-            </Dialog>
-
-          </div>
-        </div>
-      </header>
-      
+    <div className="flex flex-col w-full">
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-        {companies.length === 0 ? (
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-2xl font-bold text-gray-900">Companies</h1>
+          
+          <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+            <DialogTrigger asChild>
+              <Button>Add Company</Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Create New Company</DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleCreateCompany} className="space-y-4 mt-4">
+                {error && <p className="text-red-500 text-sm">{error}</p>}
+                <div className="space-y-2">
+                  <Label htmlFor="name">Company Name*</Label>
+                  <Input id="name" name="name" value={formData.name} onChange={handleChange} required />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="website">Website</Label>
+                  <Input id="website" name="website" placeholder="https://" value={formData.website} onChange={handleChange} />
+                </div>
+                <Button type="submit" className="w-full">Save Company</Button>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
+        {pageError ? (
+          <div className="flex flex-col items-center justify-center p-24 text-red-500">
+            <p className="text-lg font-medium">{pageError}</p>
+            <Button onClick={() => window.location.reload()} variant="outline" className="mt-4">Try Again</Button>
+          </div>
+        ) : loading ? (
+          <div className="flex flex-col items-center justify-center p-24 text-gray-500">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600 mb-4"></div>
+            <p className="text-lg font-medium animate-pulse">Loading Companies...</p>
+          </div>
+        ) : companies.length === 0 ? (
           <div className="text-center py-12">
             <h3 className="text-lg font-medium text-gray-900">No companies found</h3>
             <p className="mt-1 text-gray-500">Get started by creating a new company folder.</p>

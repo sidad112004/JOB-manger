@@ -64,17 +64,14 @@ export function Calendar() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">Calendar View</h1>
-          <Button variant="outline" onClick={() => navigate('/dashboard')}>Back to Dashboard</Button>
-        </div>
-      </header>
+    <div className="flex flex-col w-full">
       
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full bg-white mt-8 rounded-lg shadow-sm border">
         {loading ? (
-          <div className="p-8 text-center text-gray-500">Loading Calendar...</div>
+          <div className="flex flex-col items-center justify-center h-64 text-gray-500">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600 mb-4"></div>
+            <p className="text-lg font-medium animate-pulse">Loading Calendar...</p>
+          </div>
         ) : (
           <div style={{ height: '70vh' }}>
             <BigCalendar

@@ -1,5 +1,6 @@
 import * as Person from '../models/personModel.js';
 import * as Company from '../models/companyModel.js';
+import { logActivity } from '../models/activityModel.js';
 
 export const createPerson = async (req, res) => {
   try {
@@ -16,6 +17,10 @@ export const createPerson = async (req, res) => {
     }
 
     const person = await Person.createPerson(company_id, userId, name, role, linkedin_url, email, phone);
+    
+    // Log activity
+    await logActivity(userId, `Added ${name} to ${company.name}`, 'person', person.id);
+
     res.status(201).json(person);
   } catch (error) {
     console.error(error);

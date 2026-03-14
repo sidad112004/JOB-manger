@@ -18,7 +18,9 @@ export function Dashboard() {
   });
   const [activity, setActivity] = useState([]);
   const [followups, setFollowups] = useState([]);
+  const [activitiesList, setActivitiesList] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -29,18 +31,21 @@ export function Dashboard() {
         // Fetch user data (basic mock from token for now, or just generic greeting)
         setUserName('User'); // In a real app, parse JWT or have a /me endpoint
 
-        const [statsRes, activityRes, followupsRes] = await Promise.all([
+        const [statsRes, activityRes, followupsRes, timelineRes] = await Promise.all([
           axios.get('http://localhost:5000/api/dashboard/stats', { headers }),
           axios.get('http://localhost:5000/api/dashboard/activity', { headers }),
-          axios.get('http://localhost:5000/api/followups/upcoming', { headers })
+          axios.get('http://localhost:5000/api/followups/upcoming', { headers }),
+          axios.get('http://localhost:5000/api/activities?limit=10', { headers })
         ]);
 
         setStats(statsRes.data);
         setActivity(activityRes.data);
         setFollowups(followupsRes.data);
+        setActivitiesList(timelineRes.data);
         setLoading(false);
       } catch (err) {
         console.error('Failed to load dashboard data', err);
+        setError('Failed to load dashboard data. Please refresh the page.');
         setLoading(false);
       }
     };
@@ -64,10 +69,6 @@ export function Dashboard() {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    navigate('/login');
-  };
 
   const today = new Date();
   const shiftDate = (date, numDays) => {
@@ -77,21 +78,25 @@ export function Dashboard() {
   };
 
   if (loading) {
-    return <div className="p-8 text-center text-gray-500">Loading Dashboard...</div>;
+    return (
+      <div className="flex flex-col items-center justify-center p-24 text-gray-500">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600 mb-4"></div>
+        <p className="text-lg font-medium animate-pulse">Loading Dashboard...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center p-24 text-red-500">
+        <p className="text-lg font-medium">{error}</p>
+        <Button onClick={() => window.location.reload()} variant="outline" className="mt-4">Try Again</Button>
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">Job Tracker Dashboard</h1>
-          <div className="flex space-x-4">
-            <Button variant="outline" onClick={() => navigate('/companies')}>View Companies</Button>
-            <Button variant="outline" onClick={() => navigate('/calendar')}>View Calendar</Button>
-            <Button onClick={handleLogout} variant="destructive">Logout</Button>
-          </div>
-        </div>
-      </header>
+    <div className="flex flex-col w-full">
       
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full space-y-8">
         <div>
@@ -194,6 +199,47 @@ export function Dashboard() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Activity Feed */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Recent Activity</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {activitiesList.length === 0 ? (
+              <p className="text-sm text-gray-500 text-center py-4">No recent activity detected.</p>
+            ) : (
+              <div className="flow-root">
+                <ul className="-mb-8">
+                  {activitiesList.map((act, actIdx) => (
+                    <li key={act.id}>
+                      <div className="relative pb-8">
+                        {actIdx !== activitiesList.length - 1 ? (
+                          <span className="absolute left-4 top-4 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true"></span>
+                        ) : null}
+                        <div className="relative flex space-x-3">
+                          <div>
+                            <span className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center ring-8 ring-white">
+                              <span className="text-blue-600 text-xs font-bold">●</span>
+                            </span>
+                          </div>
+                          <div className="flex min-w-0 flex-1 justify-between space-x-4 pt-1.5">
+                            <div>
+                              <p className="text-sm text-gray-900">{act.action}</p>
+                            </div>
+                            <div className="whitespace-nowrap text-right text-sm text-gray-500">
+                              <time dateTime={act.created_at}>{new Date(act.created_at).toLocaleString()}</time>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </main>
     </div>
   );

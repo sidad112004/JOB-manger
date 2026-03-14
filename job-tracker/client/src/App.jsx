@@ -9,6 +9,7 @@ import { CompanyDetails } from './pages/CompanyDetails';
 import { PersonDetails } from './pages/PersonDetails';
 import { Calendar } from './pages/Calendar';
 import ProtectedRoute from './components/ProtectedRoute';
+import { Layout } from './components/Layout';
 
 function App() {
   return (
@@ -21,7 +22,9 @@ function App() {
           path="/dashboard"
           element={
             <ProtectedRoute>
-              <Dashboard />
+              <Layout>
+                <Dashboard />
+              </Layout>
             </ProtectedRoute>
           }
         />
@@ -29,7 +32,9 @@ function App() {
           path="/companies"
           element={
             <ProtectedRoute>
-              <Companies />
+              <Layout>
+                <Companies />
+              </Layout>
             </ProtectedRoute>
           }
         />
@@ -37,7 +42,9 @@ function App() {
           path="/company/:id"
           element={
             <ProtectedRoute>
-              <CompanyDetails />
+              <Layout>
+                <CompanyDetails />
+              </Layout>
             </ProtectedRoute>
           }
         />
@@ -45,7 +52,9 @@ function App() {
           path="/person/:id"
           element={
             <ProtectedRoute>
-              <PersonDetails />
+              <Layout>
+                <PersonDetails />
+              </Layout>
             </ProtectedRoute>
           }
         />
@@ -53,7 +62,9 @@ function App() {
           path="/calendar"
           element={
             <ProtectedRoute>
-              <Calendar />
+              <Layout>
+                <Calendar />
+              </Layout>
             </ProtectedRoute>
           }
         />
