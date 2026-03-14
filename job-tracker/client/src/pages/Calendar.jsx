@@ -8,7 +8,7 @@ import getDay from 'date-fns/getDay';
 import enUS from 'date-fns/locale/en-US';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { CalendarDays, CheckCircle2, Circle, Clock } from 'lucide-react';
-
+const API_URL = import.meta.env.VITE_API_URL;
 const locales = { 'en-US': enUS };
 
 const localizer = dateFnsLocalizer({ format, parse, startOfWeek, getDay, locales });
@@ -28,7 +28,7 @@ export function Calendar() {
         const headers = { Authorization: `Bearer ${token}` };
 
         const followupsRes = await axios.get(
-          'http://localhost:5000/api/followups/upcoming',
+          `${API_URL}/api/followups/upcoming`,
           { headers }
         );
 

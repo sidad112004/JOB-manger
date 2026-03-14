@@ -5,6 +5,7 @@ import {
   ArrowRight, CheckCircle, LayoutDashboard, Chrome, Bell
 } from 'lucide-react';
 
+
 export function Home() {
   const navigate = useNavigate();
   const isLoggedIn = !!localStorage.getItem('token');

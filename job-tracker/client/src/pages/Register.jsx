@@ -6,6 +6,8 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Briefcase } from 'lucide-react';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 export function Register() {
   const [formData, setFormData] = useState({ name: '', email: '', password: '' });
   const [error, setError] = useState('');
@@ -19,7 +21,7 @@ export function Register() {
     e.preventDefault();
     setLoading(true);
     try {
-      await axios.post('http://localhost:5000/api/auth/register', formData);
+      await axios.post(`${API_URL}/api/auth/register`, formData);
       setSuccess('Account created! Redirecting…');
       setTimeout(() => navigate('/login'), 1800);
     } catch (err) {

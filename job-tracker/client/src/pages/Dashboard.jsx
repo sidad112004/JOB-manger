@@ -7,6 +7,8 @@ import CalendarHeatmap from 'react-calendar-heatmap';
 import { Building2, FileText, Users, CheckCircle, XCircle, Clock, CalendarDays } from 'lucide-react';
 import 'react-calendar-heatmap/dist/styles.css';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 export function Dashboard() {
   const navigate = useNavigate();
   const [stats, setStats] = useState({
@@ -24,10 +26,10 @@ export function Dashboard() {
         const token = localStorage.getItem('token');
         const headers = { Authorization: `Bearer ${token}` };
         const [statsRes, activityRes, followupsRes, timelineRes] = await Promise.all([
-          axios.get('http://localhost:5000/api/dashboard/stats', { headers }),
-          axios.get('http://localhost:5000/api/dashboard/activity', { headers }),
-          axios.get('http://localhost:5000/api/followups/upcoming', { headers }),
-          axios.get('http://localhost:5000/api/activities?limit=10', { headers })
+          axios.get(`${API_URL}/api/dashboard/stats`, { headers }),
+          axios.get(`${API_URL}/api/dashboard/activity`, { headers }),
+          axios.get(`${API_URL}/api/followups/upcoming`, { headers }),
+          axios.get(`${API_URL}/api/activities?limit=10`, { headers })
         ]);
         setStats(statsRes.data);
         setActivity(activityRes.data);
@@ -46,10 +48,10 @@ export function Dashboard() {
   const handleCompleteFollowup = async (id) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.patch(`http://localhost:5000/api/followups/${id}/complete`, {}, {
+      await axios.patch(`${API_URL}/api/followups/${id}/complete`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      const res = await axios.get('http://localhost:5000/api/followups/upcoming', {
+      const res = await axios.get(`${API_URL}/api/followups/upcoming`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setFollowups(res.data);
@@ -84,11 +86,11 @@ export function Dashboard() {
   }
 
   const statCards = [
-    { label: 'Companies',    value: stats.total_companies, icon: Building2, color: 'text-blue-500',   bg: 'bg-blue-50' },
-    { label: 'Applications', value: stats.total_jobs,      icon: FileText,  color: 'text-indigo-500', bg: 'bg-indigo-50' },
-    { label: 'Interviews',   value: stats.interviews,      icon: Users,     color: 'text-orange-500', bg: 'bg-orange-50' },
-    { label: 'Offers',       value: stats.offers,          icon: CheckCircle, color: 'text-green-500', bg: 'bg-green-50' },
-    { label: 'Rejections',   value: stats.rejections,      icon: XCircle,   color: 'text-red-500',    bg: 'bg-red-50' },
+    { label: 'Companies', value: stats.total_companies, icon: Building2, color: 'text-blue-500', bg: 'bg-blue-50' },
+    { label: 'Applications', value: stats.total_jobs, icon: FileText, color: 'text-indigo-500', bg: 'bg-indigo-50' },
+    { label: 'Interviews', value: stats.interviews, icon: Users, color: 'text-orange-500', bg: 'bg-orange-50' },
+    { label: 'Offers', value: stats.offers, icon: CheckCircle, color: 'text-green-500', bg: 'bg-green-50' },
+    { label: 'Rejections', value: stats.rejections, icon: XCircle, color: 'text-red-500', bg: 'bg-red-50' },
   ];
 
   return (

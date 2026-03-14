@@ -11,48 +11,49 @@ import {
   ArrowRight, UserCircle2, Clock, ArrowLeft, Trash2, FileText,
   Pencil, Globe, Check
 } from 'lucide-react';
+const API_URL = import.meta.env.VITE_API_URL;
 
 const STATUS_STYLES = {
-  'Planning':          'bg-gray-100 text-gray-700',
-  'Applied':           'bg-blue-100 text-blue-700',
+  'Planning': 'bg-gray-100 text-gray-700',
+  'Applied': 'bg-blue-100 text-blue-700',
   'Online Assessment': 'bg-purple-100 text-purple-700',
-  'Interview':         'bg-orange-100 text-orange-800',
-  'Offer':             'bg-green-100 text-green-700',
-  'Rejected':          'bg-red-100 text-red-700',
+  'Interview': 'bg-orange-100 text-orange-800',
+  'Offer': 'bg-green-100 text-green-700',
+  'Rejected': 'bg-red-100 text-red-700',
 };
 
 export function CompanyDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const [company, setCompany]           = useState(null);
-  const [jobs, setJobs]                 = useState([]);
-  const [people, setPeople]             = useState([]);
+  const [company, setCompany] = useState(null);
+  const [jobs, setJobs] = useState([]);
+  const [people, setPeople] = useState([]);
   const [companyNotes, setCompanyNotes] = useState([]);
-  const [loading, setLoading]           = useState(true);
-  const [pageError, setPageError]       = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [pageError, setPageError] = useState(null);
 
   // ── Edit company ────────────────────────────────────────────
-  const [isEditOpen, setIsEditOpen]   = useState(false);
-  const [editForm, setEditForm]       = useState({ name: '', website: '', notes: '' });
-  const [editError, setEditError]     = useState('');
-  const [editSaving, setEditSaving]   = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [editForm, setEditForm] = useState({ name: '', website: '', notes: '' });
+  const [editError, setEditError] = useState('');
+  const [editSaving, setEditSaving] = useState(false);
 
   // ── Filters ─────────────────────────────────────────────────
-  const [statusFilter, setStatusFilter]     = useState('All');
+  const [statusFilter, setStatusFilter] = useState('All');
   const [locationFilter, setLocationFilter] = useState('');
   const [newCompanyNote, setNewCompanyNote] = useState('');
 
   // ── Job modal ────────────────────────────────────────────────
   const [isJobModalOpen, setIsJobModalOpen] = useState(false);
-  const [jobFormData, setJobFormData]       = useState({
+  const [jobFormData, setJobFormData] = useState({
     role: '', job_link: '', location: '', applied_date: '', status: 'Planning', notes: ''
   });
   const [jobError, setJobError] = useState('');
 
   // ── Person modal ─────────────────────────────────────────────
   const [isPersonModalOpen, setIsPersonModalOpen] = useState(false);
-  const [personFormData, setPersonFormData]       = useState({
+  const [personFormData, setPersonFormData] = useState({
     name: '', role: '', linkedin_url: '', email: '', phone: ''
   });
   const [personError, setPersonError] = useState('');
@@ -61,19 +62,19 @@ export function CompanyDetails() {
   const getHeaders = () => ({ Authorization: `Bearer ${localStorage.getItem('token')}` });
 
   const fetchCompanyDetails = async () => {
-    const res = await axios.get(`http://localhost:5000/api/companies/${id}`, { headers: getHeaders() });
+    const res = await axios.get(`${API_URL}/api/companies/${id}`, { headers: getHeaders() });
     setCompany(res.data);
   };
   const fetchJobs = async () => {
-    const res = await axios.get(`http://localhost:5000/api/jobs/company/${id}`, { headers: getHeaders() });
+    const res = await axios.get(`${API_URL}/api/jobs/company/${id}`, { headers: getHeaders() });
     setJobs(res.data);
   };
   const fetchPeople = async () => {
-    const res = await axios.get(`http://localhost:5000/api/people/company/${id}`, { headers: getHeaders() });
+    const res = await axios.get(`${API_URL}/api/people/company/${id}`, { headers: getHeaders() });
     setPeople(res.data);
   };
   const fetchCompanyNotes = async () => {
-    const res = await axios.get(`http://localhost:5000/api/company-notes/${id}`, { headers: getHeaders() });
+    const res = await axios.get(`${API_URL}/api/company-notes/${id}`, { headers: getHeaders() });
     setCompanyNotes(res.data);
   };
 
@@ -94,16 +95,16 @@ export function CompanyDetails() {
   useEffect(() => {
     if (company) {
       setEditForm({
-        name:    company.name    || '',
+        name: company.name || '',
         website: company.website || '',
-        notes:   company.notes   || '',
+        notes: company.notes || '',
       });
     }
   }, [company]);
 
   const filteredJobs = jobs.filter(job => {
     const statusMatch = statusFilter === 'All' || job.status === statusFilter;
-    const locMatch    = !locationFilter || (job.location && job.location.toLowerCase().includes(locationFilter.toLowerCase()));
+    const locMatch = !locationFilter || (job.location && job.location.toLowerCase().includes(locationFilter.toLowerCase()));
     return statusMatch && locMatch;
   });
 
@@ -118,7 +119,7 @@ export function CompanyDetails() {
     setEditError('');
     try {
       await axios.put(
-        `http://localhost:5000/api/companies/${id}`,
+        `${API_URL}/api/companies/${id}`,
         editForm,
         { headers: getHeaders() }
       );
@@ -135,7 +136,7 @@ export function CompanyDetails() {
     e.preventDefault();
     if (!newCompanyNote.trim()) return;
     await axios.post(
-      `http://localhost:5000/api/company-notes/${id}`,
+      `${API_URL}/api/company-notes/${id}`,
       { note: newCompanyNote },
       { headers: getHeaders() }
     );
@@ -144,7 +145,7 @@ export function CompanyDetails() {
   };
 
   const handleDeleteCompanyNote = async (noteId) => {
-    await axios.delete(`http://localhost:5000/api/company-notes/${noteId}`, { headers: getHeaders() });
+    await axios.delete(`${API_URL}/api/company-notes/${noteId}`, { headers: getHeaders() });
     fetchCompanyNotes();
   };
 
@@ -154,7 +155,7 @@ export function CompanyDetails() {
   const handleCreateJob = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:5000/api/jobs', { ...jobFormData, company_id: id }, { headers: getHeaders() });
+      await axios.post(`${API_URL}/api/jobs`, { ...jobFormData, company_id: id }, { headers: getHeaders() });
       setJobFormData({ role: '', job_link: '', location: '', applied_date: '', status: 'Planning', notes: '' });
       setIsJobModalOpen(false);
       fetchJobs();
@@ -165,13 +166,13 @@ export function CompanyDetails() {
 
   const handleDeleteJob = async (jobId) => {
     if (!window.confirm('Delete this job application?')) return;
-    await axios.delete(`http://localhost:5000/api/jobs/${jobId}`, { headers: getHeaders() });
+    await axios.delete(`${API_URL}/api/jobs/${jobId}`, { headers: getHeaders() });
     fetchJobs();
   };
 
   const handleUpdateStatus = async (jobId, newStatus) => {
     await axios.patch(
-      `http://localhost:5000/api/jobs/${jobId}/status`,
+      `${API_URL}/api/jobs/${jobId}/status`,
       { status: newStatus },
       { headers: getHeaders() }
     );
@@ -184,7 +185,7 @@ export function CompanyDetails() {
   const handleCreatePerson = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:5000/api/people', { ...personFormData, company_id: id }, { headers: getHeaders() });
+      await axios.post(`${API_URL}/api/people`, { ...personFormData, company_id: id }, { headers: getHeaders() });
       setPersonFormData({ name: '', role: '', linkedin_url: '', email: '', phone: '' });
       setIsPersonModalOpen(false);
       fetchPeople();
@@ -195,7 +196,7 @@ export function CompanyDetails() {
 
   const handleDeletePerson = async (personId) => {
     if (!window.confirm('Delete this contact?')) return;
-    await axios.delete(`http://localhost:5000/api/people/${personId}`, { headers: getHeaders() });
+    await axios.delete(`${API_URL}/api/people/${personId}`, { headers: getHeaders() });
     fetchPeople();
   };
 

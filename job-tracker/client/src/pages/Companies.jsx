@@ -6,7 +6,7 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../components/ui/dialog';
 import { Building2, Plus, ExternalLink, CalendarDays, FolderOpen, ArrowRight, Trash2 } from 'lucide-react';
-
+const API_URL = import.meta.env.VITE_API_URL;
 export function Companies() {
   const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -19,7 +19,7 @@ export function Companies() {
   const fetchCompanies = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:5000/api/companies', {
+      const res = await axios.get(`${API_URL}/api/companies`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setCompanies(res.data);
@@ -38,7 +38,7 @@ export function Companies() {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
-      await axios.post('http://localhost:5000/api/companies', formData, {
+      await axios.post(`${API_URL}/api/companies`, formData, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setFormData({ name: '', website: '', notes: '' });
@@ -53,7 +53,7 @@ export function Companies() {
     if (!window.confirm('Delete this company?')) return;
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`http://localhost:5000/api/companies/${id}`, {
+      await axios.delete(`${API_URL}/api/companies/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchCompanies();

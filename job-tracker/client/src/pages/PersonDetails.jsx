@@ -10,6 +10,8 @@ import {
   CheckCircle2, Clock, Building2, UserCircle2, Trash2, Pencil, Check
 } from 'lucide-react';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 export function PersonDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -37,9 +39,9 @@ export function PersonDetails() {
       setLoading(true);
       const headers = getHeaders();
       const [personRes, notesRes, followupsRes] = await Promise.all([
-        axios.get(`http://localhost:5000/api/people/${id}`, { headers }),
-        axios.get(`http://localhost:5000/api/person-notes/${id}`, { headers }),
-        axios.get(`http://localhost:5000/api/followups/person/${id}`, { headers })
+        axios.get(`${API_URL}/api/people/${id}`, { headers }),
+        axios.get(`${API_URL}/api/person-notes/${id}`, { headers }),
+        axios.get(`${API_URL}/api/followups/person/${id}`, { headers })
       ]);
       setPerson(personRes.data);
       setNotes(notesRes.data);
@@ -77,7 +79,7 @@ export function PersonDetails() {
     setEditError('');
     try {
       await axios.put(
-        `http://localhost:5000/api/people/${id}`,
+        `${API_URL}/api/people/${id}`,
         editForm,
         { headers: getHeaders() }
       );
@@ -94,7 +96,7 @@ export function PersonDetails() {
     e.preventDefault();
     if (!newNote.trim()) return;
     await axios.post(
-      'http://localhost:5000/api/person-notes',
+      `${API_URL}/api/person-notes`,
       { person_id: id, note: newNote },
       { headers: getHeaders() }
     );
@@ -104,7 +106,7 @@ export function PersonDetails() {
 
   const handleDeleteNote = async (noteId) => {
     await axios.delete(
-      `http://localhost:5000/api/person-notes/${noteId}`,
+      `${API_URL}/api/person-notes/${noteId}`,
       { headers: getHeaders() }
     );
     fetchData();
@@ -115,7 +117,7 @@ export function PersonDetails() {
     e.preventDefault();
     if (!newFollowupDate) return;
     await axios.post(
-      'http://localhost:5000/api/followups',
+      `${API_URL}/api/followups`,
       { person_id: id, followup_date: newFollowupDate },
       { headers: getHeaders() }
     );
@@ -125,7 +127,7 @@ export function PersonDetails() {
 
   const handleCompleteFollowup = async (followupId) => {
     await axios.patch(
-      `http://localhost:5000/api/followups/${followupId}/complete`,
+      `${API_URL}/api/followups/${followupId}/complete`,
       {},
       { headers: getHeaders() }
     );

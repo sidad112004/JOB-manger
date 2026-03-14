@@ -6,14 +6,16 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Lock, Trash2, Check, AlertTriangle, ArrowLeft } from 'lucide-react';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 export function Settings() {
-  const navigate  = useNavigate();
-  const user      = JSON.parse(localStorage.getItem('user') || '{}');
+  const navigate = useNavigate();
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
   const getHeaders = () => ({ Authorization: `Bearer ${localStorage.getItem('token')}` });
 
   // ── Change password ─────────────────────────────────────────
-  const [pwForm, setPwForm]     = useState({ current_password: '', new_password: '', confirm_password: '' });
-  const [pwError, setPwError]   = useState('');
+  const [pwForm, setPwForm] = useState({ current_password: '', new_password: '', confirm_password: '' });
+  const [pwError, setPwError] = useState('');
   const [pwSuccess, setPwSuccess] = useState('');
   const [pwLoading, setPwLoading] = useState(false);
 
@@ -33,7 +35,7 @@ export function Settings() {
     setPwLoading(true);
     try {
       await axios.put(
-        'http://localhost:5000/api/auth/change-password',
+        `${API_URL}/api/auth/change-password`,
         { current_password: pwForm.current_password, new_password: pwForm.new_password },
         { headers: getHeaders() }
       );
@@ -46,9 +48,9 @@ export function Settings() {
   };
 
   // ── Delete account ──────────────────────────────────────────
-  const [deleteConfirm, setDeleteConfirm]   = useState('');
-  const [deleteError, setDeleteError]       = useState('');
-  const [deleteLoading, setDeleteLoading]   = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState('');
+  const [deleteError, setDeleteError] = useState('');
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const [showDeleteForm, setShowDeleteForm] = useState(false);
 
   const handleDeleteAccount = async (e) => {
@@ -59,7 +61,7 @@ export function Settings() {
     }
     setDeleteLoading(true);
     try {
-      await axios.delete('http://localhost:5000/api/auth/delete-account', { headers: getHeaders() });
+      await axios.delete(`${API_URL}/api/auth/delete-account`, { headers: getHeaders() });
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       navigate('/login');
