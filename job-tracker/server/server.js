@@ -33,7 +33,25 @@ process.on('unhandledRejection', (reason, promise) => {
 });
 
 // Middleware
-app.use(cors());
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://reachlist.netlify.app",
+  "chrome-extension://midmealkaoamekongnjfifkbdnmepifh"
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    } else {
+      return callback(new Error("CORS not allowed"));
+    }
+  },
+  credentials: true
+}));
+
 app.use(express.json());
 
 // Connect to Database
