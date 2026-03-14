@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Briefcase, Calendar, Bell, LogOut, Menu, Search, X } from 'lucide-react';
+import { LayoutDashboard, Briefcase, Calendar, LogOut, Menu, Search, X, Settings, User } from 'lucide-react';
 import { Input } from './ui/input';
 import axios from 'axios';
 
@@ -10,16 +10,23 @@ export function Layout({ children }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState(null);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [isAvatarOpen, setIsAvatarOpen] = useState(false);
+  const avatarRef = useRef(null);
+
+  // Get user info from localStorage
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const initials = user.name ? user.name.charAt(0).toUpperCase() : 'U';
 
   const handleLogout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
     navigate('/login');
   };
 
   const menuItems = [
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-    { name: 'Companies', path: '/companies', icon: Briefcase },
-    { name: 'Calendar', path: '/calendar', icon: Calendar },
+    { name: 'Companies',  path: '/companies',  icon: Briefcase },
+    { name: 'Calendar',   path: '/calendar',   icon: Calendar },
   ];
 
   const handleSearch = async (e) => {
@@ -36,6 +43,17 @@ export function Layout({ children }) {
       console.error('Search failed', err);
     }
   };
+
+  // Close avatar dropdown when clicking outside
+  useEffect(() => {
+    const handler = (e) => {
+      if (avatarRef.current && !avatarRef.current.contains(e.target)) {
+        setIsAvatarOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
 
   const navItemClass = ({ isActive }) =>
     `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
@@ -60,7 +78,6 @@ export function Layout({ children }) {
         transform transition-transform duration-200
         ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
-        {/* Logo */}
         <div className="h-14 flex items-center px-5 border-b border-gray-100">
           <div className="flex items-center gap-2 font-bold text-lg text-blue-600">
             <div className="h-7 w-7 rounded-lg bg-blue-600 flex items-center justify-center">
@@ -73,7 +90,6 @@ export function Layout({ children }) {
           </button>
         </div>
 
-        {/* Nav */}
         <nav className="flex-1 px-3 py-4 space-y-1">
           <p className="px-3 mb-2 text-[10px] font-semibold text-gray-400 uppercase tracking-widest">Menu</p>
           {menuItems.map((item) => (
@@ -84,7 +100,6 @@ export function Layout({ children }) {
           ))}
         </nav>
 
-        {/* Logout */}
         <div className="p-3 border-t border-gray-100">
           <button
             onClick={handleLogout}
@@ -100,7 +115,6 @@ export function Layout({ children }) {
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Top bar */}
         <header className="h-14 bg-white border-b border-gray-100 flex items-center px-4 shrink-0 z-30 gap-3">
-          {/* Mobile hamburger */}
           <button onClick={() => setIsMobileMenuOpen(true)} className="lg:hidden p-1.5 text-gray-500 hover:bg-gray-100 rounded-md">
             <Menu className="h-5 w-5" />
           </button>
@@ -166,20 +180,49 @@ export function Layout({ children }) {
               )}
             </div>
 
-            {/* Bell */}
-            <button className="relative p-2 text-gray-400 hover:bg-gray-100 rounded-full transition-colors hidden sm:flex">
-              <Bell className="h-4 w-4" />
-              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-red-500 rounded-full"></span>
-            </button>
+            {/* Avatar with dropdown */}
+            <div className="relative" ref={avatarRef}>
+              <button
+                onClick={() => setIsAvatarOpen(prev => !prev)}
+                className="h-8 w-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm hover:bg-blue-700 transition-colors ring-2 ring-transparent hover:ring-blue-200"
+              >
+                {initials}
+              </button>
 
-            {/* Avatar */}
-            <div className="h-8 w-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm cursor-pointer hover:bg-blue-700 transition-colors">
-              U
+              {isAvatarOpen && (
+                <div className="absolute right-0 top-full mt-2 w-52 bg-white border border-gray-100 rounded-xl shadow-xl z-50 overflow-hidden">
+                  {/* User info */}
+                  <div className="px-4 py-3 border-b border-gray-50">
+                    <p className="text-sm font-semibold text-gray-900 truncate">{user.name || 'User'}</p>
+                    <p className="text-xs text-gray-400 truncate mt-0.5">{user.email || ''}</p>
+                  </div>
+
+                  {/* Menu items */}
+                  <div className="py-1">
+                    <button
+                      onClick={() => { setIsAvatarOpen(false); navigate('/settings'); }}
+                      className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                      <Settings className="h-4 w-4 text-gray-400" />
+                      Settings
+                    </button>
+                  </div>
+
+                  <div className="py-1 border-t border-gray-50">
+                    <button
+                      onClick={() => { setIsAvatarOpen(false); handleLogout(); }}
+                      className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      Sign Out
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </header>
 
-        {/* Page content */}
         <main className="flex-1 overflow-y-auto">
           {children}
         </main>

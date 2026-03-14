@@ -10,6 +10,7 @@ import { PersonDetails } from './pages/PersonDetails';
 import { Calendar } from './pages/Calendar';
 import ProtectedRoute from './components/ProtectedRoute';
 import { Layout } from './components/Layout';
+import { Settings } from './pages/Settings.jsx';
 
 function App() {
   return (
@@ -68,6 +69,16 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+
+        <Route path="/settings" element={
+          <ProtectedRoute>
+            <Layout>
+              <Settings />
+            </Layout>
+          </ProtectedRoute>
+
+        } />
         {/* Fallback route */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

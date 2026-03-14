@@ -17,8 +17,7 @@ export const createPerson = async (req, res) => {
     }
 
     const person = await Person.createPerson(company_id, userId, name, role, linkedin_url, email, phone);
-    
-    // Log activity
+
     await logActivity(userId, `Added ${name} to ${company.name}`, 'person', person.id);
 
     res.status(201).json(person);
@@ -41,24 +40,6 @@ export const getPeopleByCompany = async (req, res) => {
   }
 };
 
-export const deletePerson = async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const personId = req.params.id;
-
-    const deletedPerson = await Person.deletePerson(personId, userId);
-    
-    if (!deletedPerson) {
-      return res.status(404).json({ message: 'Person not found or unauthorized' });
-    }
-
-    res.json({ message: 'Person removed successfully' });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error deleting person' });
-  }
-};
-
 export const getPersonDetails = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -73,5 +54,66 @@ export const getPersonDetails = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error fetching person details' });
+  }
+};
+
+// ── UPDATE person ──────────────────────────────────────────────
+export const updatePerson = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const personId = req.params.id;
+    const { name, role, linkedin_url, email, phone } = req.body;
+
+    if (!name) {
+      return res.status(400).json({ message: 'Name is required' });
+    }
+
+    const updated = await Person.updatePerson(
+      personId,
+      userId,
+      { name, role, linkedin_url, email, phone }
+    );
+
+    if (!updated) {
+      return res.status(404).json({ message: 'Person not found or unauthorized' });
+    }
+
+    await logActivity(userId, `Updated contact ${name}`, 'person', personId);
+
+    res.json(updated);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error updating person' });
+  }
+};
+
+export const getPersonByUrl = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { url } = req.query;
+    if (!url) return res.json(null);
+    const person = await Person.getPersonByUrl(userId, url);
+    res.json(person || null);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json(null);
+  }
+};
+
+export const deletePerson = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const personId = req.params.id;
+
+    const deletedPerson = await Person.deletePerson(personId, userId);
+
+    if (!deletedPerson) {
+      return res.status(404).json({ message: 'Person not found or unauthorized' });
+    }
+
+    res.json({ message: 'Person removed successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error deleting person' });
   }
 };

@@ -17,15 +17,24 @@ export function Calendar() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // ── Controlled date & view — this is what was missing ────────
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [currentView, setCurrentView] = useState('month');
+
   useEffect(() => {
     const fetchCalendarData = async () => {
       try {
         const token = localStorage.getItem('token');
         const headers = { Authorization: `Bearer ${token}` };
-        const followupsRes = await axios.get('http://localhost:5000/api/followups/upcoming', { headers });
+
+        const followupsRes = await axios.get(
+          'http://localhost:5000/api/followups/upcoming',
+          { headers }
+        );
 
         const followupEvents = followupsRes.data.map(f => {
-          const isOverdue = !f.completed && new Date(f.followup_date) < new Date(new Date().setHours(0,0,0,0));
+          const isOverdue = !f.completed &&
+            new Date(f.followup_date) < new Date(new Date().setHours(0, 0, 0, 0));
           return {
             title: `${f.person_name} (${f.company_name})`,
             allDay: true,
@@ -82,20 +91,32 @@ export function Calendar() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
           <h1 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
-            <CalendarDays className="h-5 w-5 text-blue-600" /> Application Calendar
+            <CalendarDays className="h-5 w-5 text-blue-600" />
+            Application Calendar
           </h1>
-          <p className="text-sm text-gray-500 mt-0.5">Track scheduled follow-ups and deadlines</p>
+          <p className="text-sm text-gray-500 mt-0.5">
+            Track scheduled follow-ups and deadlines
+          </p>
         </div>
 
         <div className="flex items-center gap-4 text-xs font-medium bg-white border border-gray-100 px-4 py-2 rounded-lg shadow-sm">
-          <div className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-green-500 inline-block" /> Completed</div>
-          <div className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-orange-400 inline-block" /> Upcoming</div>
-          <div className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-red-500 inline-block" /> Overdue</div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-green-500 inline-block" /> Completed
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-orange-400 inline-block" /> Upcoming
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-red-500 inline-block" /> Overdue
+          </div>
         </div>
       </div>
 
       {/* Calendar */}
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden p-4" style={{ height: '75vh' }}>
+      <div
+        className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden p-4"
+        style={{ height: '75vh' }}
+      >
         {loading ? (
           <div className="flex flex-col items-center justify-center h-full text-gray-400">
             <div className="w-7 h-7 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mb-3" />
@@ -110,6 +131,12 @@ export function Calendar() {
             style={{ height: '100%' }}
             eventPropGetter={eventStyleGetter}
             components={{ event: CustomEvent }}
+
+            // ── These three props fix the Back/Next/Today buttons ──
+            date={currentDate}
+            view={currentView}
+            onNavigate={(newDate) => setCurrentDate(newDate)}
+            onView={(newView) => setCurrentView(newView)}
           />
         )}
       </div>
