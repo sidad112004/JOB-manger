@@ -1,15 +1,12 @@
 import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, Briefcase, Calendar, Bell, LogOut, Menu, Search, X } from 'lucide-react';
-import { Button } from './ui/button';
 import { Input } from './ui/input';
 import axios from 'axios';
 
 export function Layout({ children }) {
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  
-  // Search state
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState(null);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
@@ -28,12 +25,7 @@ export function Layout({ children }) {
   const handleSearch = async (e) => {
     const query = e.target.value;
     setSearchQuery(query);
-    
-    if (query.trim().length === 0) {
-      setSearchResults(null);
-      return;
-    }
-
+    if (query.trim().length === 0) { setSearchResults(null); return; }
     try {
       const token = localStorage.getItem('token');
       const res = await axios.get(`http://localhost:5000/api/search?q=${query}`, {
@@ -46,74 +38,83 @@ export function Layout({ children }) {
   };
 
   const navItemClass = ({ isActive }) =>
-    `flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
-      isActive ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+    `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+      isActive
+        ? 'bg-blue-600 text-white shadow-sm'
+        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
     }`;
 
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
-      {/* Mobile Sidebar overlay */}
+      {/* Mobile overlay */}
       {isMobileMenuOpen && (
-        <div 
-          className="lg:hidden fixed inset-0 z-40 bg-gray-900/50 backdrop-blur-sm"
+        <div
+          className="lg:hidden fixed inset-0 z-40 bg-black/30 backdrop-blur-sm"
           onClick={() => setIsMobileMenuOpen(false)}
         />
       )}
 
       {/* Sidebar */}
-      <aside className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white border-r flex flex-col transform transition-transform duration-200 ease-in-out ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
-        <div className="h-16 flex items-center px-6 border-b">
-          <div className="flex items-center gap-2 font-bold text-xl text-blue-600">
-            <Briefcase className="h-6 w-6" />
-            <span>JobTracker</span>
+      <aside className={`
+        fixed lg:static inset-y-0 left-0 z-50 w-60 bg-white border-r border-gray-100 flex flex-col
+        transform transition-transform duration-200
+        ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+      `}>
+        {/* Logo */}
+        <div className="h-14 flex items-center px-5 border-b border-gray-100">
+          <div className="flex items-center gap-2 font-bold text-lg text-blue-600">
+            <div className="h-7 w-7 rounded-lg bg-blue-600 flex items-center justify-center">
+              <Briefcase className="h-4 w-4 text-white" />
+            </div>
+            JobTracker
           </div>
-          <button className="lg:hidden ml-auto text-gray-500 hover:text-gray-700" onClick={() => setIsMobileMenuOpen(false)}>
-            <X className="h-5 w-5" />
+          <button className="lg:hidden ml-auto text-gray-400 hover:text-gray-600" onClick={() => setIsMobileMenuOpen(false)}>
+            <X className="h-4 w-4" />
           </button>
         </div>
-        
-        <div className="flex-1 overflow-y-auto px-4 py-6 space-y-1">
+
+        {/* Nav */}
+        <nav className="flex-1 px-3 py-4 space-y-1">
+          <p className="px-3 mb-2 text-[10px] font-semibold text-gray-400 uppercase tracking-widest">Menu</p>
           {menuItems.map((item) => (
             <NavLink key={item.name} to={item.path} onClick={() => setIsMobileMenuOpen(false)} className={navItemClass}>
-              <item.icon className="h-5 w-5" />
-              <span>{item.name}</span>
+              <item.icon className="h-4 w-4 shrink-0" />
+              {item.name}
             </NavLink>
           ))}
-        </div>
-        
-        <div className="p-4 border-t">
-          <button 
+        </nav>
+
+        {/* Logout */}
+        <div className="p-3 border-t border-gray-100">
+          <button
             onClick={handleLogout}
-            className="flex items-center space-x-3 px-4 py-3 w-full rounded-lg text-red-600 hover:bg-red-50 transition-colors"
+            className="flex items-center gap-3 px-3 py-2.5 w-full rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 transition-colors"
           >
-            <LogOut className="h-5 w-5" />
-            <span>Logout</span>
+            <LogOut className="h-4 w-4" />
+            Logout
           </button>
         </div>
       </aside>
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
-        {/* Top Navbar */}
-        <header className="h-16 bg-white border-b flex items-center px-4 shrink-0 z-30 justify-between md:justify-end">
-          <div className="flex items-center md:hidden">
-            <button
-              onClick={() => setIsMobileMenuOpen(true)}
-              className="p-2 -ml-2 text-gray-600 hover:bg-gray-100 rounded-md"
-            >
-              <Menu className="h-6 w-6" />
-            </button>
-            <span className="ml-2 font-bold text-blue-600">JobTracker</span>
-          </div>
+      {/* Main */}
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        {/* Top bar */}
+        <header className="h-14 bg-white border-b border-gray-100 flex items-center px-4 shrink-0 z-30 gap-3">
+          {/* Mobile hamburger */}
+          <button onClick={() => setIsMobileMenuOpen(true)} className="lg:hidden p-1.5 text-gray-500 hover:bg-gray-100 rounded-md">
+            <Menu className="h-5 w-5" />
+          </button>
+          <span className="lg:hidden font-bold text-blue-600 text-sm">JobTracker</span>
 
-          <div className="flex items-center space-x-4">
-            <div className="relative w-full max-w-sm ml-auto">
+          <div className="flex items-center gap-3 ml-auto">
+            {/* Search */}
+            <div className="relative">
               <div className="relative">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
                 <Input
                   type="text"
-                  placeholder="Search jobs, people, companies..."
-                  className="pl-9 w-48 sm:w-64 md:w-80 bg-gray-50 border-transparent focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                  placeholder="Search..."
+                  className="pl-9 w-44 sm:w-64 h-9 bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 rounded-full text-sm transition-all"
                   value={searchQuery}
                   onChange={handleSearch}
                   onFocus={() => setIsSearchFocused(true)}
@@ -121,41 +122,40 @@ export function Layout({ children }) {
                 />
               </div>
 
-              {/* Search Results Dropdown */}
-              {isSearchFocused && searchResults && (searchQuery.trim() !== '') && (
-                <div className="absolute top-full right-0 mt-2 w-80 bg-white border shadow-xl rounded-lg overflow-hidden z-50 max-h-[400px] overflow-y-auto">
+              {isSearchFocused && searchResults && searchQuery.trim() !== '' && (
+                <div className="absolute top-full right-0 mt-2 w-80 bg-white border border-gray-100 shadow-xl rounded-xl overflow-hidden z-50 max-h-96 overflow-y-auto">
                   {searchResults.companies.length === 0 && searchResults.jobs.length === 0 && searchResults.people.length === 0 ? (
-                    <div className="p-4 text-sm text-gray-500 text-center">No results found for "{searchQuery}"</div>
+                    <div className="p-4 text-sm text-gray-500 text-center">No results for "{searchQuery}"</div>
                   ) : (
-                    <div className="py-2">
+                    <div className="py-1">
                       {searchResults.companies.length > 0 && (
-                        <div className="px-3 py-2">
-                          <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Companies</h4>
+                        <div className="px-3 pt-2 pb-1">
+                          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-1">Companies</p>
                           {searchResults.companies.map(c => (
-                            <div key={c.id} onClick={() => navigate(`/company/${c.id}`)} className="cursor-pointer hover:bg-gray-100 p-2 rounded text-sm text-gray-800">
+                            <div key={c.id} onClick={() => navigate(`/company/${c.id}`)} className="cursor-pointer hover:bg-gray-50 px-2 py-1.5 rounded-md text-sm text-gray-800 font-medium">
                               {c.name}
                             </div>
                           ))}
                         </div>
                       )}
                       {searchResults.jobs.length > 0 && (
-                        <div className="px-3 py-2 border-t border-gray-100">
-                          <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Jobs</h4>
+                        <div className="px-3 pt-2 pb-1 border-t border-gray-50">
+                          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-1">Jobs</p>
                           {searchResults.jobs.map(j => (
-                            <div key={j.id} onClick={() => navigate(`/company/${j.company_id || j.id}`)} className="cursor-pointer hover:bg-gray-100 p-2 rounded text-sm flex justify-between items-center">
+                            <div key={j.id} onClick={() => navigate(`/company/${j.company_id || j.id}`)} className="cursor-pointer hover:bg-gray-50 px-2 py-1.5 rounded-md text-sm flex justify-between items-center">
                               <span className="text-gray-800 font-medium">{j.role}</span>
-                              <span className="text-gray-500 text-xs truncate ml-2 max-w-[120px]">{j.company_name}</span>
+                              <span className="text-gray-400 text-xs truncate ml-2">{j.company_name}</span>
                             </div>
                           ))}
                         </div>
                       )}
                       {searchResults.people.length > 0 && (
-                        <div className="px-3 py-2 border-t border-gray-100">
-                          <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">People</h4>
+                        <div className="px-3 pt-2 pb-1 border-t border-gray-50">
+                          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-1">People</p>
                           {searchResults.people.map(p => (
-                            <div key={p.id} onClick={() => navigate(`/person/${p.id}`)} className="cursor-pointer hover:bg-gray-100 p-2 rounded text-sm flex justify-between items-center">
-                              <span className="text-gray-800 font-medium">{p.name} {p.role ? `- ${p.role}` : ''}</span>
-                              <span className="text-gray-500 text-xs truncate ml-2 max-w-[120px]">{p.company_name}</span>
+                            <div key={p.id} onClick={() => navigate(`/person/${p.id}`)} className="cursor-pointer hover:bg-gray-50 px-2 py-1.5 rounded-md text-sm flex justify-between items-center">
+                              <span className="text-gray-800 font-medium">{p.name}{p.role ? ` · ${p.role}` : ''}</span>
+                              <span className="text-gray-400 text-xs truncate ml-2">{p.company_name}</span>
                             </div>
                           ))}
                         </div>
@@ -165,16 +165,22 @@ export function Layout({ children }) {
                 </div>
               )}
             </div>
-            {/* Notification bell mock */}
-            <button className="relative p-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors hidden sm:block">
-              <Bell className="h-5 w-5" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
+
+            {/* Bell */}
+            <button className="relative p-2 text-gray-400 hover:bg-gray-100 rounded-full transition-colors hidden sm:flex">
+              <Bell className="h-4 w-4" />
+              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-red-500 rounded-full"></span>
             </button>
+
+            {/* Avatar */}
+            <div className="h-8 w-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm cursor-pointer hover:bg-blue-700 transition-colors">
+              U
+            </div>
           </div>
         </header>
 
-        {/* Dynamic Page Content */}
-        <main className="flex-1 overflow-y-auto w-full z-0">
+        {/* Page content */}
+        <main className="flex-1 overflow-y-auto">
           {children}
         </main>
       </div>

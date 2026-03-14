@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
-import { Label } from '../components/ui/label';
+import { ArrowLeft, Send, Linkedin, Mail, Phone, CalendarDays, CheckCircle2, Clock, Building2, UserCircle2, Trash2 } from 'lucide-react';
 
 export function PersonDetails() {
   const { id } = useParams();
@@ -12,7 +12,6 @@ export function PersonDetails() {
   const [notes, setNotes] = useState([]);
   const [followups, setFollowups] = useState([]);
   const [loading, setLoading] = useState(true);
-
   const [newNote, setNewNote] = useState('');
   const [newFollowupDate, setNewFollowupDate] = useState('');
 
@@ -21,13 +20,11 @@ export function PersonDetails() {
       setLoading(true);
       const token = localStorage.getItem('token');
       const headers = { Authorization: `Bearer ${token}` };
-
       const [personRes, notesRes, followupsRes] = await Promise.all([
         axios.get(`http://localhost:5000/api/people/${id}`, { headers }),
         axios.get(`http://localhost:5000/api/person-notes/${id}`, { headers }),
         axios.get(`http://localhost:5000/api/followups/person/${id}`, { headers })
       ]);
-
       setPerson(personRes.data);
       setNotes(notesRes.data);
       setFollowups(followupsRes.data);
@@ -38,177 +35,204 @@ export function PersonDetails() {
     }
   };
 
-  useEffect(() => {
-    fetchData();
-  }, [id]);
+  useEffect(() => { fetchData(); }, [id]);
 
   const handleAddNote = async (e) => {
     e.preventDefault();
-    if (!newNote) return;
-
-    try {
-      const token = localStorage.getItem('token');
-      await axios.post('http://localhost:5000/api/person-notes', 
-        { person_id: id, note: newNote }, 
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setNewNote('');
-      fetchData();
-    } catch (err) {
-      console.error('Failed to add note', err);
-    }
+    if (!newNote.trim()) return;
+    const token = localStorage.getItem('token');
+    await axios.post('http://localhost:5000/api/person-notes', { person_id: id, note: newNote }, { headers: { Authorization: `Bearer ${token}` } });
+    setNewNote('');
+    fetchData();
   };
 
   const handleDeleteNote = async (noteId) => {
-    try {
-      const token = localStorage.getItem('token');
-      await axios.delete(`http://localhost:5000/api/person-notes/${noteId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      fetchData();
-    } catch (err) {
-      console.error('Failed to delete note', err);
-    }
+    const token = localStorage.getItem('token');
+    await axios.delete(`http://localhost:5000/api/person-notes/${noteId}`, { headers: { Authorization: `Bearer ${token}` } });
+    fetchData();
   };
 
   const handleAddFollowup = async (e) => {
     e.preventDefault();
     if (!newFollowupDate) return;
-
-    try {
-      const token = localStorage.getItem('token');
-      await axios.post('http://localhost:5000/api/followups', 
-        { person_id: id, followup_date: newFollowupDate }, 
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setNewFollowupDate('');
-      fetchData();
-    } catch (err) {
-      console.error('Failed to add follow-up', err);
-    }
+    const token = localStorage.getItem('token');
+    await axios.post('http://localhost:5000/api/followups', { person_id: id, followup_date: newFollowupDate }, { headers: { Authorization: `Bearer ${token}` } });
+    setNewFollowupDate('');
+    fetchData();
   };
 
   const handleCompleteFollowup = async (followupId) => {
-    try {
-      const token = localStorage.getItem('token');
-      await axios.patch(`http://localhost:5000/api/followups/${followupId}/complete`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      fetchData();
-    } catch (err) {
-      console.error('Failed to complete follow-up', err);
-    }
+    const token = localStorage.getItem('token');
+    await axios.patch(`http://localhost:5000/api/followups/${followupId}/complete`, {}, { headers: { Authorization: `Bearer ${token}` } });
+    fetchData();
   };
 
-  if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center p-24 text-gray-500">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600 mb-4"></div>
-        <p className="text-lg font-medium animate-pulse">Loading Person...</p>
-      </div>
-    );
-  }
-  if (!person) return <div className="p-8 text-center text-red-500">Person not found or access denied.</div>;
+  if (loading) return (
+    <div className="flex flex-col items-center justify-center h-full min-h-[60vh] text-gray-400">
+      <div className="w-7 h-7 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mb-3" />
+      <p className="text-sm">Loading…</p>
+    </div>
+  );
+
+  if (!person) return <div className="p-8 text-center text-red-500 text-sm">Person not found.</div>;
+
+  const today = new Date();
 
   return (
-    <div className="flex flex-col w-full">
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">{person.name}</h1>
-            <p className="text-sm text-gray-500">{person.role || 'No specific role'}</p>
-          </div>
-          <Button variant="outline" onClick={() => navigate(`/company/${person.company_id}`)}>Back to Company</Button>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Header */}
+      <div className="flex items-center gap-3 mb-8">
+        <button
+          onClick={() => navigate(`/company/${person.company_id}`)}
+          className="p-2 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4" />
+        </button>
+        <div>
+          <h1 className="text-xl font-semibold text-gray-900">{person.name}</h1>
+          <p className="text-sm text-gray-500 flex items-center gap-1 mt-0.5">
+            <Building2 className="h-3 w-3" /> {person.role || 'Unspecified Role'}
+          </p>
         </div>
-      </header>
+      </div>
 
-      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full grid grid-cols-1 md:grid-cols-3 gap-8">
-        
-        {/* Contact Info Column */}
-        <div className="md:col-span-1 space-y-6">
-          <div className="bg-white rounded-lg border shadow-sm p-6">
-            <h2 className="text-lg font-semibold border-b pb-2 mb-4">Contact Details</h2>
-            <div className="space-y-3 text-sm">
-              <p><strong>LinkedIn:</strong> {person.linkedin_url ? <a href={person.linkedin_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Profile</a> : '-'}</p>
-              <p><strong>Email:</strong> {person.email || '-'}</p>
-              <p><strong>Phone:</strong> {person.phone || '-'}</p>
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+        {/* Left column */}
+        <div className="md:col-span-4 space-y-4">
+          {/* Contact card */}
+          <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 h-16" />
+            <div className="px-5 pb-5">
+              <div className="h-16 w-16 rounded-full bg-indigo-100 text-indigo-700 font-bold text-2xl flex items-center justify-center -mt-8 border-4 border-white shadow-sm mx-auto">
+                {person.name.charAt(0).toUpperCase()}
+              </div>
+              <div className="text-center mt-2 mb-5">
+                <p className="font-semibold text-gray-900">{person.name}</p>
+                <p className="text-xs text-gray-500">{person.role}</p>
+              </div>
+              <div className="space-y-2.5 text-sm">
+                <div className="flex items-center gap-2.5 text-gray-600">
+                  <Linkedin className="h-4 w-4 text-blue-500 shrink-0" />
+                  {person.linkedin_url
+                    ? <a href={person.linkedin_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-xs truncate">LinkedIn Profile</a>
+                    : <span className="text-gray-400 text-xs italic">Not provided</span>}
+                </div>
+                <div className="flex items-center gap-2.5 text-gray-600">
+                  <Mail className="h-4 w-4 text-gray-400 shrink-0" />
+                  <span className="text-xs truncate">{person.email || <span className="text-gray-400 italic">Not provided</span>}</span>
+                </div>
+                <div className="flex items-center gap-2.5 text-gray-600">
+                  <Phone className="h-4 w-4 text-gray-400 shrink-0" />
+                  <span className="text-xs">{person.phone || <span className="text-gray-400 italic">Not provided</span>}</span>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg border shadow-sm p-6">
-            <h2 className="text-lg font-semibold border-b pb-2 mb-4">Follow-ups</h2>
+          {/* Follow-ups card */}
+          <div className="bg-white rounded-xl border border-gray-100 p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <CalendarDays className="h-4 w-4 text-gray-400" />
+              <h2 className="text-sm font-semibold text-gray-900">Follow-ups</h2>
+            </div>
+
             <form onSubmit={handleAddFollowup} className="flex gap-2 mb-4">
-              <Input 
-                type="date" 
-                value={newFollowupDate} 
-                onChange={(e) => setNewFollowupDate(e.target.value)}
-                required
-              />
-              <Button type="submit" size="sm">Set</Button>
+              <Input type="date" value={newFollowupDate} onChange={e => setNewFollowupDate(e.target.value)} required className="h-8 text-sm bg-gray-50" />
+              <Button type="submit" size="sm" className="h-8 px-3 shrink-0">Set</Button>
             </form>
 
-            <ul className="space-y-3">
-              {followups.map(f => (
-                <li key={f.id} className={`flex justify-between items-center text-sm p-2 rounded ${f.completed ? 'bg-green-50 text-green-800' : 'bg-orange-50 text-orange-800'}`}>
-                  <span>{new Date(f.followup_date).toLocaleDateString()}</span>
-                  {!f.completed ? (
-                    <Button variant="outline" size="sm" onClick={() => handleCompleteFollowup(f.id)}>Done</Button>
-                  ) : (
-                    <span className="font-semibold text-xs">Completed</span>
-                  )}
-                </li>
-              ))}
-              {followups.length === 0 && <p className="text-sm text-gray-500 text-center">No follow-ups scheduled.</p>}
-            </ul>
+            {followups.length === 0 ? (
+              <p className="text-xs text-gray-400 text-center py-4 border border-dashed border-gray-200 rounded-lg">No follow-ups scheduled.</p>
+            ) : (
+              <ul className="space-y-2">
+                {followups.map(f => {
+                  const isOverdue = !f.completed && new Date(f.followup_date) < new Date(new Date().setHours(0,0,0,0));
+                  return (
+                    <li key={f.id} className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium border ${
+                      f.completed ? 'bg-green-50 border-green-100 text-green-700' :
+                      isOverdue   ? 'bg-red-50 border-red-100 text-red-700' :
+                                    'bg-orange-50 border-orange-100 text-orange-700'}`}>
+                      <span className="flex items-center gap-1.5">
+                        <Clock className="h-3 w-3" />
+                        {new Date(f.followup_date).toLocaleDateString()}
+                      </span>
+                      {f.completed ? (
+                        <span className="flex items-center gap-1 font-semibold text-green-600">
+                          <CheckCircle2 className="h-3 w-3" /> Done
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => handleCompleteFollowup(f.id)}
+                          className="text-xs font-semibold underline underline-offset-2 hover:no-underline"
+                        >
+                          Mark done
+                        </button>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
           </div>
         </div>
 
-        {/* Notes Column */}
-        <div className="md:col-span-2">
-          <div className="bg-white rounded-lg border shadow-sm p-6">
-            <h2 className="text-lg font-semibold border-b pb-2 mb-4">Conversation Notes</h2>
-            
-            <form onSubmit={handleAddNote} className="mb-6 space-y-3">
-              <div className="space-y-1">
-                <Label htmlFor="note">Add new note</Label>
-                <textarea 
-                  id="note"
-                  value={newNote}
-                  onChange={(e) => setNewNote(e.target.value)}
-                  className="w-full flex min-h-[80px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  placeholder="e.g. Messaged on LinkedIn regarding software engineer role..."
-                  required
-                />
-              </div>
-              <Button type="submit">Save Note</Button>
-            </form>
+        {/* Notes column */}
+        <div className="md:col-span-8">
+          <div className="bg-white rounded-xl border border-gray-100 overflow-hidden flex flex-col h-[calc(100vh-14rem)] max-h-[700px]">
+            {/* Header */}
+            <div className="px-5 py-3 border-b border-gray-100 bg-gray-50/50">
+              <h2 className="text-sm font-semibold text-gray-900">Conversation Notes</h2>
+            </div>
 
-            <div className="space-y-4">
+            {/* Notes list */}
+            <div className="flex-1 overflow-y-auto p-5 space-y-4 bg-gray-50/30">
               {notes.length === 0 ? (
-                <p className="text-center text-gray-500 py-4">No notes recorded yet. Add one above.</p>
+                <div className="flex flex-col items-center justify-center h-full text-gray-400">
+                  <UserCircle2 className="h-10 w-10 mb-2 text-gray-300" />
+                  <p className="text-sm">No notes yet.</p>
+                  <p className="text-xs">Add your first note below.</p>
+                </div>
               ) : (
-                <ul className="space-y-3">
-                  {notes.map(note => (
-                    <li key={note.id} className="text-sm bg-gray-50 p-4 rounded-lg border relative group/note">
-                      <p className="whitespace-pre-wrap pr-6">{note.note}</p>
-                      <button 
+                notes.map(note => (
+                  <div key={note.id} className="flex flex-col items-end group">
+                    <div className="max-w-[85%] bg-blue-600 text-white px-4 py-3 rounded-2xl rounded-tr-sm shadow-sm relative">
+                      <p className="text-sm whitespace-pre-wrap leading-relaxed">{note.note}</p>
+                      <button
                         onClick={() => handleDeleteNote(note.id)}
-                        className="absolute top-2 right-2 text-red-500 opacity-0 group-hover/note:opacity-100 transition-opacity"
-                        title="Delete Note"
+                        className="absolute -left-9 top-2 p-1.5 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity bg-white rounded-full shadow border border-gray-100"
                       >
-                        ✕
+                        <Trash2 className="h-3 w-3" />
                       </button>
-                      <span className="text-xs text-gray-400 block mt-2 text-right">
-                        {new Date(note.created_at).toLocaleString()}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
+                    </div>
+                    <span className="text-xs text-gray-400 mt-1.5 px-1">
+                      {new Date(note.created_at).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
+                    </span>
+                  </div>
+                ))
               )}
             </div>
+
+            {/* Input */}
+            <div className="p-4 border-t border-gray-100 bg-white">
+              <form onSubmit={handleAddNote} className="flex gap-2 items-end">
+                <textarea
+                  value={newNote}
+                  onChange={e => setNewNote(e.target.value)}
+                  className="flex-1 min-h-[44px] max-h-[120px] resize-y rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all"
+                  placeholder="Add a note… (Enter to send, Shift+Enter for newline)"
+                  required
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleAddNote(e); }
+                  }}
+                />
+                <Button type="submit" className="h-11 w-11 rounded-xl p-0 shrink-0 shadow-sm" disabled={!newNote.trim()}>
+                  <Send className="h-4 w-4" />
+                </Button>
+              </form>
+            </div>
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }
