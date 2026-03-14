@@ -72,6 +72,7 @@ export function Settings() {
   };
 
   return (
+
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8">
       {/* Header */}
       <div className="flex items-center gap-3 mb-8">
@@ -93,7 +94,7 @@ export function Settings() {
         <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-50 flex items-center gap-2">
             <Lock className="h-4 w-4 text-gray-400" />
-            <h2 className="text-sm font-semibold text-gray-900">Change Password</h2>
+            <h2 className="text-sm font-semibold text-gray-900">Change Password ?</h2>
           </div>
 
           <form onSubmit={handleChangePassword} className="p-6 space-y-4">
