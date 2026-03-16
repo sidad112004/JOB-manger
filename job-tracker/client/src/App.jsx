@@ -12,6 +12,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import { Layout } from './components/Layout';
 import { Settings } from './pages/Settings.jsx';
 import { ThemeProvider } from './context/ThemeContext.jsx';
+import { Tasks } from './pages/Tasks.jsx';
 function App() {
   return (
     <ThemeProvider>
@@ -80,6 +81,14 @@ function App() {
             </ProtectedRoute>
 
           } />
+          <Route path="/tasks" element={
+            <ProtectedRoute>
+              <Layout>
+                <Tasks />
+              </Layout>
+            </ProtectedRoute>
+          } />
+
           {/* Fallback route */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

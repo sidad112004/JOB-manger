@@ -1,6 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Briefcase, Calendar, LogOut, Menu, Search, X, Settings, Sun, Moon } from 'lucide-react';
+import {
+  LayoutDashboard, Briefcase, Calendar, LogOut,
+  Menu, Search, X, Settings, Sun, Moon, ClipboardList
+} from 'lucide-react';
 import { Input } from './ui/input';
 import { useTheme } from '../context/ThemeContext';
 import axios from 'axios';
@@ -10,14 +13,13 @@ export function Layout({ children }) {
   const navigate = useNavigate();
   const { isDark, toggleTheme } = useTheme();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState(null);
-  const [isSearchFocused, setIsSearchFocused] = useState(false);
-  const [isAvatarOpen, setIsAvatarOpen] = useState(false);
+  const [searchQuery, setSearchQuery]           = useState('');
+  const [searchResults, setSearchResults]       = useState(null);
+  const [isSearchFocused, setIsSearchFocused]   = useState(false);
+  const [isAvatarOpen, setIsAvatarOpen]         = useState(false);
   const avatarRef = useRef(null);
 
-  // Get user info from localStorage
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const user     = JSON.parse(localStorage.getItem('user') || '{}');
   const initials = user.name ? user.name.charAt(0).toUpperCase() : 'U';
 
   const handleLogout = () => {
@@ -28,8 +30,12 @@ export function Layout({ children }) {
 
   const menuItems = [
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-    { name: 'Companies', path: '/companies', icon: Briefcase },
-    { name: 'Calendar', path: '/calendar', icon: Calendar },
+    { name: 'Companies',  path: '/companies',  icon: Briefcase },
+    { name: 'Calendar',   path: '/calendar',   icon: Calendar },
+  ];
+
+  const personalItems = [
+    { name: 'Tasks', path: '/tasks', icon: ClipboardList },
   ];
 
   const handleSearch = async (e) => {
@@ -38,7 +44,7 @@ export function Layout({ children }) {
     if (query.trim().length === 0) { setSearchResults(null); return; }
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get(`${API_URL}/api/search?q=${query}`, {
+      const res   = await axios.get(`${API_URL}/api/search?q=${query}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setSearchResults(res.data);
@@ -47,7 +53,6 @@ export function Layout({ children }) {
     }
   };
 
-  // Close avatar dropdown when clicking outside
   useEffect(() => {
     const handler = (e) => {
       if (avatarRef.current && !avatarRef.current.contains(e.target)) {
@@ -80,6 +85,7 @@ export function Layout({ children }) {
         transform transition-transform duration-200
         ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
+        {/* Logo */}
         <div className="h-14 flex items-center px-5 border-b border-gray-100">
           <div className="flex items-center gap-2 font-bold text-lg text-blue-600">
             <div className="h-7 w-7 rounded-lg bg-blue-600 flex items-center justify-center">
@@ -92,16 +98,32 @@ export function Layout({ children }) {
           </button>
         </div>
 
-        <nav className="flex-1 px-3 py-4 space-y-1">
-          <p className="px-3 mb-2 text-[10px] font-semibold text-gray-400 uppercase tracking-widest">Menu</p>
-          {menuItems.map((item) => (
-            <NavLink key={item.name} to={item.path} onClick={() => setIsMobileMenuOpen(false)} className={navItemClass}>
-              <item.icon className="h-4 w-4 shrink-0" />
-              {item.name}
-            </NavLink>
-          ))}
+        {/* Nav */}
+        <nav className="flex-1 px-3 py-4 space-y-4 overflow-y-auto">
+          {/* Main menu */}
+          <div className="space-y-1">
+            <p className="px-3 mb-2 text-[10px] font-semibold text-gray-400 uppercase tracking-widest">Menu</p>
+            {menuItems.map((item) => (
+              <NavLink key={item.name} to={item.path} onClick={() => setIsMobileMenuOpen(false)} className={navItemClass}>
+                <item.icon className="h-4 w-4 shrink-0" />
+                {item.name}
+              </NavLink>
+            ))}
+          </div>
+
+          {/* Personal section */}
+          <div className="space-y-1">
+            <p className="px-3 mb-2 text-[10px] font-semibold text-gray-400 uppercase tracking-widest">Personal</p>
+            {personalItems.map((item) => (
+              <NavLink key={item.name} to={item.path} onClick={() => setIsMobileMenuOpen(false)} className={navItemClass}>
+                <item.icon className="h-4 w-4 shrink-0" />
+                {item.name}
+              </NavLink>
+            ))}
+          </div>
         </nav>
 
+        {/* Logout */}
         <div className="p-3 border-t border-gray-100">
           <button
             onClick={handleLogout}
@@ -182,7 +204,7 @@ export function Layout({ children }) {
               )}
             </div>
 
-            {/* Avatar with dropdown */}
+            {/* Avatar dropdown */}
             <div className="relative" ref={avatarRef}>
               <button
                 onClick={() => setIsAvatarOpen(prev => !prev)}
@@ -193,14 +215,12 @@ export function Layout({ children }) {
 
               {isAvatarOpen && (
                 <div className="absolute right-0 top-full mt-2 w-52 bg-white border border-gray-100 rounded-xl shadow-xl z-50 overflow-hidden">
-                  {/* User info */}
                   <div className="px-4 py-3 border-b border-gray-50">
                     <p className="text-sm font-semibold text-gray-900 truncate">{user.name || 'User'}</p>
                     <p className="text-xs text-gray-400 truncate mt-0.5">{user.email || ''}</p>
                   </div>
 
                   <div className="py-1">
-                    {/* Settings */}
                     <button
                       onClick={() => { setIsAvatarOpen(false); navigate('/settings'); }}
                       className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
@@ -209,7 +229,6 @@ export function Layout({ children }) {
                       Settings
                     </button>
 
-                    {/* ── Dark mode toggle ── */}
                     <button
                       onClick={toggleTheme}
                       className="flex items-center justify-between w-full px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
@@ -221,7 +240,6 @@ export function Layout({ children }) {
                         }
                         <span>{isDark ? 'Light Mode' : 'Dark Mode'}</span>
                       </div>
-                      {/* Toggle pill */}
                       <div className={`relative w-9 h-5 rounded-full transition-colors duration-200 ${isDark ? 'bg-blue-600' : 'bg-gray-200'}`}>
                         <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-transform duration-200 ${isDark ? 'translate-x-4' : 'translate-x-0'}`} />
                       </div>

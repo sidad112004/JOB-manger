@@ -13,7 +13,7 @@ import dashboardRoutes from './routes/dashboardRoutes.js';
 import searchRoutes from './routes/searchRoutes.js';
 import companyNotesRoutes from './routes/companyNotesRoutes.js';
 import activityRoutes from './routes/activityRoutes.js';
-
+import taskRoutes from './routes/taskRoutes.js';
 dotenv.config();
 
 const app = express();
@@ -94,6 +94,7 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/search', searchRoutes);
 app.use('/api/company-notes', companyNotesRoutes);
 app.use('/api/activities', activityRoutes);
+app.use('/api/tasks', taskRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

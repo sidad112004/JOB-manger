@@ -6,22 +6,22 @@ dotenv.config();
 const { Pool } = pkg;
 
 const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: {
-        rejectUnauthorized: false
-    }
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false
+  }
 });
 
 const createTables = async () => {
-    try {
-        console.log("Creating database tables...");
+  try {
+    console.log("Creating database tables...");
 
-        await pool.query(`
+    await pool.query(`
       CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
     `);
 
-        /* USERS */
-        await pool.query(`
+    /* USERS */
+    await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
         id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
         name TEXT NOT NULL,
@@ -31,8 +31,8 @@ const createTables = async () => {
       );
     `);
 
-        /* COMPANIES */
-        await pool.query(`
+    /* COMPANIES */
+    await pool.query(`
       CREATE TABLE IF NOT EXISTS companies (
         id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
         user_id UUID REFERENCES users(id) ON DELETE CASCADE,
@@ -43,8 +43,8 @@ const createTables = async () => {
       );
     `);
 
-        /* JOB APPLICATIONS */
-        await pool.query(`
+    /* JOB APPLICATIONS */
+    await pool.query(`
       CREATE TABLE IF NOT EXISTS jobs (
         id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
         user_id UUID REFERENCES users(id) ON DELETE CASCADE,
@@ -59,8 +59,8 @@ const createTables = async () => {
       );
     `);
 
-        /* PEOPLE (EMPLOYEES / REFERRALS) */
-        await pool.query(`
+    /* PEOPLE (EMPLOYEES / REFERRALS) */
+    await pool.query(`
       CREATE TABLE IF NOT EXISTS people (
         id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
         user_id UUID REFERENCES users(id) ON DELETE CASCADE,
@@ -74,8 +74,8 @@ const createTables = async () => {
       );
     `);
 
-        /* PERSON NOTES */
-        await pool.query(`
+    /* PERSON NOTES */
+    await pool.query(`
       CREATE TABLE IF NOT EXISTS person_notes (
         id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
         person_id UUID REFERENCES people(id) ON DELETE CASCADE,
@@ -84,8 +84,8 @@ const createTables = async () => {
       );
     `);
 
-        /* FOLLOW UPS */
-        await pool.query(`
+    /* FOLLOW UPS */
+    await pool.query(`
       CREATE TABLE IF NOT EXISTS followups (
         id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
         person_id UUID REFERENCES people(id) ON DELETE CASCADE,
@@ -95,8 +95,8 @@ const createTables = async () => {
       );
     `);
 
-        /* COMPANY NOTES */
-        await pool.query(`
+    /* COMPANY NOTES */
+    await pool.query(`
       CREATE TABLE IF NOT EXISTS company_notes (
         id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
         company_id UUID REFERENCES companies(id) ON DELETE CASCADE,
@@ -105,8 +105,8 @@ const createTables = async () => {
       );
     `);
 
-        /* ACTIVITY LOG */
-        await pool.query(`
+    /* ACTIVITY LOG */
+    await pool.query(`
       CREATE TABLE IF NOT EXISTS activities (
         id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
         user_id UUID REFERENCES users(id) ON DELETE CASCADE,
@@ -117,13 +117,29 @@ const createTables = async () => {
       );
     `);
 
-        console.log("All tables created successfully.");
+    /* PERSONAL TASKS */
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS tasks (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+        company_id UUID REFERENCES companies(id) ON DELETE SET NULL,
+        title TEXT NOT NULL,
+        due_date DATE,
+        priority TEXT DEFAULT 'Medium' CHECK (priority IN ('High', 'Medium', 'Low')),
+        category TEXT DEFAULT 'Personal' CHECK (category IN ('Prep', 'Apply', 'Research', 'Personal')),
+        completed BOOLEAN DEFAULT FALSE,
+        completed_at TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
 
-        process.exit();
-    } catch (err) {
-        console.error("Error creating tables:", err);
-        process.exit(1);
-    }
+    console.log("All tables created successfully.");
+
+    process.exit();
+  } catch (err) {
+    console.error("Error creating tables:", err);
+    process.exit(1);
+  }
 };
 
 createTables();

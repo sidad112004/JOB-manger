@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
-import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
 import CalendarHeatmap from 'react-calendar-heatmap';
-import { Building2, FileText, Users, CheckCircle, XCircle, Clock, CalendarDays } from 'lucide-react';
+import {
+  Building2, FileText, Users, CheckCircle, XCircle,
+  Clock, CalendarDays, CheckCircle2, Circle, ClipboardList
+} from 'lucide-react';
 import 'react-calendar-heatmap/dist/styles.css';
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -14,27 +16,36 @@ export function Dashboard() {
   const [stats, setStats] = useState({
     total_companies: 0, total_jobs: 0, interviews: 0, offers: 0, rejections: 0
   });
-  const [activity, setActivity] = useState([]);
-  const [followups, setFollowups] = useState([]);
+  const [activity, setActivity]         = useState([]);
+  const [followups, setFollowups]       = useState([]);
   const [activitiesList, setActivitiesList] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [tasks, setTasks]               = useState([]);
+  const [loading, setLoading]           = useState(true);
+  const [error, setError]               = useState(null);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const token = localStorage.getItem('token');
+        const token   = localStorage.getItem('token');
         const headers = { Authorization: `Bearer ${token}` };
         const [statsRes, activityRes, followupsRes, timelineRes] = await Promise.all([
           axios.get(`${API_URL}/api/dashboard/stats`, { headers }),
           axios.get(`${API_URL}/api/dashboard/activity`, { headers }),
           axios.get(`${API_URL}/api/followups/upcoming`, { headers }),
-          axios.get(`${API_URL}/api/activities?limit=10`, { headers })
+          axios.get(`${API_URL}/api/activities?limit=10`, { headers }),
         ]);
         setStats(statsRes.data);
         setActivity(activityRes.data);
         setFollowups(followupsRes.data);
         setActivitiesList(timelineRes.data);
+
+        // Tasks fetched separately — won't break dashboard if route not set up yet
+        try {
+          const tasksRes = await axios.get(`${API_URL}/api/tasks/upcoming`, { headers });
+          setTasks(tasksRes.data);
+        } catch {
+          setTasks([]);
+        }
         setLoading(false);
       } catch (err) {
         console.error('Failed to load dashboard data', err);
@@ -60,37 +71,53 @@ export function Dashboard() {
     }
   };
 
+  const handleCompleteTask = async (id) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.patch(`${API_URL}/api/tasks/${id}/complete`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const res = await axios.get(`${API_URL}/api/tasks/upcoming`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setTasks(res.data);
+    } catch (err) {
+      console.error('Failed to complete task', err);
+    }
+  };
+
   const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
   const shiftDate = (date, numDays) => {
     const newDate = new Date(date);
     newDate.setDate(newDate.getDate() + numDays);
     return newDate;
   };
 
-  if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full min-h-[60vh] text-gray-400">
-        <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mb-3" />
-        <p className="text-sm">Loading dashboard…</p>
-      </div>
-    );
-  }
+  const isOverdue = (due) => due && new Date(due) < today;
+  const isToday   = (due) => due && new Date(due).toDateString() === today.toDateString();
 
-  if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full min-h-[60vh] text-red-500">
-        <p className="text-sm mb-3">{error}</p>
-        <Button onClick={() => window.location.reload()} variant="outline" size="sm">Try Again</Button>
-      </div>
-    );
-  }
+  if (loading) return (
+    <div className="flex flex-col items-center justify-center h-full min-h-[60vh] text-gray-400">
+      <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mb-3" />
+      <p className="text-sm">Loading dashboard…</p>
+    </div>
+  );
+
+  if (error) return (
+    <div className="flex flex-col items-center justify-center h-full min-h-[60vh] text-red-500">
+      <p className="text-sm mb-3">{error}</p>
+      <Button onClick={() => window.location.reload()} variant="outline" size="sm">Try Again</Button>
+    </div>
+  );
 
   const statCards = [
-    { label: 'Companies', value: stats.total_companies, icon: Building2, color: 'text-blue-500', bg: 'bg-blue-50' },
-    { label: 'Applications', value: stats.total_jobs, icon: FileText, color: 'text-indigo-500', bg: 'bg-indigo-50' },
-    { label: 'Interviews', value: stats.interviews, icon: Users, color: 'text-orange-500', bg: 'bg-orange-50' },
-    { label: 'Offers', value: stats.offers, icon: CheckCircle, color: 'text-green-500', bg: 'bg-green-50' },
-    { label: 'Rejections', value: stats.rejections, icon: XCircle, color: 'text-red-500', bg: 'bg-red-50' },
+    { label: 'Companies',    value: stats.total_companies, icon: Building2,   color: 'text-blue-500',   bg: 'bg-blue-50' },
+    { label: 'Applications', value: stats.total_jobs,      icon: FileText,    color: 'text-indigo-500', bg: 'bg-indigo-50' },
+    { label: 'Interviews',   value: stats.interviews,      icon: Users,       color: 'text-orange-500', bg: 'bg-orange-50' },
+    { label: 'Offers',       value: stats.offers,          icon: CheckCircle, color: 'text-green-500',  bg: 'bg-green-50' },
+    { label: 'Rejections',   value: stats.rejections,      icon: XCircle,     color: 'text-red-500',    bg: 'bg-red-50' },
   ];
 
   return (
@@ -132,8 +159,8 @@ export function Dashboard() {
             ) : (
               <ul className="space-y-2">
                 {followups.map(f => {
-                  const fDate = new Date(f.followup_date);
-                  const isToday = fDate.toDateString() === today.toDateString();
+                  const fDate   = new Date(f.followup_date);
+                  const todayFu = fDate.toDateString() === new Date().toDateString();
                   return (
                     <li key={f.id} className="flex items-center justify-between px-3 py-2.5 rounded-lg border border-gray-100 hover:border-gray-200 transition-colors">
                       <div className="flex items-center gap-3">
@@ -146,10 +173,9 @@ export function Dashboard() {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${isToday ? 'bg-red-100 text-red-600' : 'bg-yellow-50 text-yellow-700'}`}>
-                          {isToday ? 'Today' : fDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${todayFu ? 'bg-red-100 text-red-600' : 'bg-yellow-50 text-yellow-700'}`}>
+                          {todayFu ? 'Today' : fDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                         </span>
-                        {/* ── Done button — explicit colors so dark mode works ── */}
                         <Button
                           variant="outline"
                           size="sm"
@@ -175,10 +201,9 @@ export function Dashboard() {
           </div>
           <div className="p-6 flex items-center justify-center">
             <CalendarHeatmap
-              startDate={shiftDate(today, -135)}
-              endDate={today}
+              startDate={shiftDate(new Date(), -135)}
+              endDate={new Date()}
               values={activity}
-              // ── Fixed: explicit scale classes, green in both light & dark ──
               classForValue={(value) => {
                 if (!value || !value.count) return 'color-empty';
                 if (value.count >= 4) return 'color-scale-4';
@@ -188,6 +213,58 @@ export function Dashboard() {
               }}
             />
           </div>
+        </div>
+      </div>
+
+      {/* Tasks widget */}
+      <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+        <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <ClipboardList className="h-4 w-4 text-gray-400" />
+            <h2 className="text-sm font-semibold text-gray-900">My Tasks</h2>
+          </div>
+          <button
+            onClick={() => navigate('/tasks')}
+            className="text-xs text-blue-500 hover:text-blue-700 font-medium transition-colors"
+          >
+            View all →
+          </button>
+        </div>
+        <div className="p-4">
+          {tasks.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-8 text-gray-400">
+              <CheckCircle2 className="h-7 w-7 mb-2 text-green-400" />
+              <p className="text-sm">No pending tasks.</p>
+            </div>
+          ) : (
+            <ul className="space-y-2">
+              {tasks.map(t => {
+                const overdue = isOverdue(t.due_date);
+                const dueToday = isToday(t.due_date);
+                return (
+                  <li key={t.id} className={`flex items-center gap-3 px-3 py-2.5 rounded-lg border transition-colors ${
+                    overdue ? 'border-red-100 bg-red-50/30' : 'border-gray-100 hover:border-gray-200'
+                  }`}>
+                    <button onClick={() => handleCompleteTask(t.id)} className="shrink-0">
+                      <Circle className={`h-4 w-4 ${overdue ? 'text-red-400' : 'text-gray-300 hover:text-gray-400'}`} />
+                    </button>
+                    <p className="text-sm text-gray-900 flex-1 truncate">{t.title}</p>
+                    {t.due_date && (
+                      <span className={`text-xs font-medium shrink-0 ${
+                        overdue ? 'text-red-500' : dueToday ? 'text-yellow-600' : 'text-gray-400'
+                      }`}>
+                        {overdue ? 'Overdue' : dueToday ? 'Today' : new Date(t.due_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                      </span>
+                    )}
+                    {/* Priority dot */}
+                    <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                      t.priority === 'High' ? 'bg-red-500' : t.priority === 'Medium' ? 'bg-yellow-500' : 'bg-gray-300'
+                    }`} />
+                  </li>
+                );
+              })}
+            </ul>
+          )}
         </div>
       </div>
 
@@ -201,7 +278,7 @@ export function Dashboard() {
             <p className="text-sm text-gray-400 text-center py-6">No recent activity.</p>
           ) : (
             <ul className="space-y-4">
-              {activitiesList.map((act, idx) => (
+              {activitiesList.map((act) => (
                 <li key={act.id} className="flex items-start gap-3">
                   <div className="mt-0.5 h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
                     <span className="w-1.5 h-1.5 rounded-full bg-blue-500 block" />
