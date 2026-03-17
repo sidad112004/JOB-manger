@@ -18,7 +18,7 @@ export const createJob = async (req, res) => {
     }
 
     const job = await Job.createJob(company_id, userId, role, job_link, location, applied_date, status, notes);
-    
+
     // Log activity
     await logActivity(userId, `Applied to ${role} at ${company.name}`, 'job', job.id);
 
@@ -49,11 +49,11 @@ export const updateJobStatus = async (req, res) => {
     const { status } = req.body;
 
     if (!status) {
-       return res.status(400).json({ message: 'Missing status property' });
+      return res.status(400).json({ message: 'Missing status property' });
     }
 
     const updatedJob = await Job.updateJobStatus(jobId, userId, status);
-    
+
     if (!updatedJob) {
       return res.status(404).json({ message: 'Job not found or unauthorized' });
     }
@@ -79,7 +79,7 @@ export const deleteJob = async (req, res) => {
     const jobId = req.params.id;
 
     const deletedJob = await Job.deleteJob(jobId, userId);
-    
+
     if (!deletedJob) {
       return res.status(404).json({ message: 'Job not found or unauthorized' });
     }
@@ -88,5 +88,16 @@ export const deleteJob = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error deleting job' });
+  }
+};
+
+export const getAllJobsForUser = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const jobs = await Job.getAllJobs(userId);
+    res.json(jobs);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error fetching all jobs' });
   }
 };

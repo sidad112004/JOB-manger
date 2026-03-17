@@ -117,3 +117,14 @@ export const deletePerson = async (req, res) => {
     res.status(500).json({ message: 'Server error deleting person' });
   }
 };
+
+export const getAllPeopleForUser = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const people = await Person.getAllPeople(userId);
+    res.json(people);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error fetching all people' });
+  }
+};

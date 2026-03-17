@@ -4,7 +4,8 @@ import {
   createJob,
   getJobsByCompany,
   updateJobStatus,
-  deleteJob
+  deleteJob,
+  getAllJobsForUser
 } from '../controllers/jobController.js';
 
 const router = express.Router();
@@ -13,6 +14,7 @@ const router = express.Router();
 router.use(authMiddleware);
 
 router.post('/', createJob);
+router.get('/all', getAllJobsForUser);
 router.get('/company/:companyId', getJobsByCompany);
 router.patch('/:id/status', updateJobStatus);
 router.delete('/:id', deleteJob);

@@ -40,3 +40,15 @@ export const getJobById = async (jobId, userId) => {
   );
   return result.rows[0];
 };
+
+export const getAllJobs = async (userId) => {
+  const result = await pool.query(
+    `SELECT j.*, c.name as company_name
+     FROM jobs j
+     JOIN companies c ON j.company_id = c.id
+     WHERE j.user_id = $1
+     ORDER BY j.created_at DESC`,
+    [userId]
+  );
+  return result.rows;
+};

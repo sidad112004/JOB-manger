@@ -13,6 +13,9 @@ import { Layout } from './components/Layout';
 import { Settings } from './pages/Settings.jsx';
 import { ThemeProvider } from './context/ThemeContext.jsx';
 import { Tasks } from './pages/Tasks.jsx';
+import { Jobs } from './pages/Jobs.jsx';
+import { People } from './pages/People.jsx';
+import { Extension } from './pages/Extension.jsx';
 function App() {
   return (
     <ThemeProvider>
@@ -88,7 +91,26 @@ function App() {
               </Layout>
             </ProtectedRoute>
           } />
+          <Route path="/jobs" element={
+            <ProtectedRoute>
+              <Layout>
+                <Jobs />
+              </Layout>
+            </ProtectedRoute>} />
+          <Route path="/people" element={
+            <ProtectedRoute>
+              <Layout>
+                <People />
+              </Layout>
+            </ProtectedRoute>} />
+          <Route path="/extension" element={
 
+            <ProtectedRoute>
+              <Layout>
+                <Extension />
+              </Layout>
+            </ProtectedRoute>
+          } />
           {/* Fallback route */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

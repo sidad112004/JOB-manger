@@ -2,7 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Briefcase, Calendar, LogOut,
-  Menu, Search, X, Settings, Sun, Moon, ClipboardList
+  Menu, Search, X, Settings, Sun, Moon, ClipboardList,
+  FileText, Users, Chrome
 } from 'lucide-react';
 import { Input } from './ui/input';
 import { useTheme } from '../context/ThemeContext';
@@ -31,11 +32,14 @@ export function Layout({ children }) {
   const menuItems = [
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
     { name: 'Companies',  path: '/companies',  icon: Briefcase },
+    { name: 'Jobs',       path: '/jobs',       icon: FileText },
+    { name: 'People',     path: '/people',     icon: Users },
     { name: 'Calendar',   path: '/calendar',   icon: Calendar },
   ];
 
   const personalItems = [
-    { name: 'Tasks', path: '/tasks', icon: ClipboardList },
+    { name: 'Tasks',      path: '/tasks',     icon: ClipboardList },
+    { name: 'Extension',  path: '/extension', icon: Chrome },
   ];
 
   const handleSearch = async (e) => {

@@ -55,3 +55,15 @@ export const getPersonById = async (personId, userId) => {
   );
   return result.rows[0];
 };
+
+export const getAllPeople = async (userId) => {
+  const result = await pool.query(
+    `SELECT p.*, c.name as company_name
+     FROM people p
+     JOIN companies c ON p.company_id = c.id
+     WHERE p.user_id = $1
+     ORDER BY p.name ASC`,
+    [userId]
+  );
+  return result.rows;
+};

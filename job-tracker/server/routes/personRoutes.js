@@ -6,7 +6,8 @@ import {
   deletePerson,
   getPersonDetails,
   updatePerson,
-  getPersonByUrl
+  getPersonByUrl,
+  getAllPeopleForUser
 } from '../controllers/personController.js';
 
 const router = express.Router();
@@ -14,6 +15,7 @@ const router = express.Router();
 router.use(authMiddleware);
 
 router.post('/', createPerson);
+router.get('/all', getAllPeopleForUser);
 router.get('/lookup', getPersonByUrl);
 router.get('/company/:companyId', getPeopleByCompany);
 router.get('/:id', getPersonDetails);
